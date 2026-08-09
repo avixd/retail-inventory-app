@@ -1,0 +1,64 @@
+:root {
+  /* Palette — anchored on the reference steel-teal */
+  --teal-900: #0e3f57;
+  --teal-800: #124b68;
+  --teal-700: #16607f;
+  --teal-600: #1a6790;
+  --teal-500: #2181ad;
+  --teal-100: #e3f0f6;
+  --teal-50:  #f2f8fb;
+
+  --ink-900: #0f1b22;
+  --ink-700: #33454f;
+  --ink-500: #61727c;
+  --ink-300: #9aa8b1;
+
+  --bg:        #eef2f5;
+  --surface:   #ffffff;
+  --border:    #dce3e8;
+  --border-strong: #c4d0d8;
+
+  --accent:  #f4a63b;
+  --success: #2e9e6b;
+
+  --radius:   14px;
+  --radius-sm: 9px;
+  --shadow-sm: 0 1px 2px rgba(15, 27, 34, .06), 0 1px 3px rgba(15, 27, 34, .05);
+  --shadow-md: 0 4px 14px rgba(15, 27, 34, .08);
+  --shadow-lg: 0 12px 34px rgba(15, 27, 34, .12);
+
+  --header-h: 64px;
+  --sidebar-w: 268px;
+
+  --font-sans: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  --font-num: "Inter Variable", "Segoe UI", system-ui, sans-serif;
+
+  font-family: var(--font-sans);
+  color: var(--ink-900);
+  font-feature-settings: "cv02", "cv03", "cv04", "tnum";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+
+/* Tabular figures for anything numeric (KPIs, tables) keeps columns aligned */
+.kpi__val, .table td, .table th, .detail__row, .report-item__num,
+.kpi-status__val, .num { font-variant-numeric: tabular-nums; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink-900);
+}
+
+h1, h2, h3, h4, p { margin: 0; }
+
+button { font-family: inherit; cursor: pointer; }
+
+a { color: var(--teal-600); }

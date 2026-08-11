@@ -72,7 +72,7 @@ flowchart TD
     end
 
     GHA["GitHub Actions<br/>build + deploy"] -->|vite build| CDN
-    CDN -.serves.-> Browser
+    CDN -.->|serves| M
 ```
 
 No server, no database, no authentication, no external API. The entire application is static files, which is what makes public hosting free, read-only for visitors, and impossible to expose credentials through — there are none in the bundle.

@@ -1,3 +1,7 @@
+/**
+ * Transfer Orders — inter-site stock transfers and their lifecycle status.
+ * Source: TRANSFER_ORDERS.
+ */
 import { useState } from "react";
 import {
   Truck, PackageCheck, Hourglass, Boxes, ArrowRight, Plus,

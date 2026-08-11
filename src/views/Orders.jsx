@@ -1,3 +1,9 @@
+/**
+ * Orders · Procure-to-Pay — PO pipeline by lifecycle stage, cycle time,
+ * outstanding payables, and a raise-a-PO flow. The PO flow writes to local
+ * React state only — nothing is persisted or sent.
+ * Selectors: poStatusSummary(), avgPoCycleTime(), outstandingByTerms().
+ */
 import { useState } from "react";
 import {
   FilePlus2, ClipboardList, ReceiptText, Plus, Trash2, Send,

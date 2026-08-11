@@ -1,3 +1,8 @@
+/**
+ * Goods Receipt — record received quantities and post a goods receipt note
+ * (GRN) against an open PO. Posting updates local state (a new GRN number)
+ * only; nothing is persisted.
+ */
 import { useState } from "react";
 import { PackageCheck, CheckCircle2, X, Warehouse } from "lucide-react";
 import ViewHead from "../components/ViewHead";

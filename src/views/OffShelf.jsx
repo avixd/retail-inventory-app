@@ -1,3 +1,8 @@
+/**
+ * Off-Shelf · Warehouse — reserve (off-shelf) stock and the capital tied up
+ * in it, plus a warehouse floor map (bins grouped by aisle, coloured by fill
+ * tier). Selectors: warehouseFloor(), siteBinCapacity(), offShelfByWarehouse().
+ */
 import { useState } from "react";
 import { Warehouse, Boxes, MapPin, Layers, Clock3 } from "lucide-react";
 import ViewHead from "../components/ViewHead";

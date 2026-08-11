@@ -1,3 +1,8 @@
+/**
+ * Primary navigation. NAV_ITEMS defines the nine views grouped into four
+ * sections (Overview, Inventory, Procurement, Master Data); the Sidebar
+ * renders them and reports the selected id back to App via onSelect.
+ */
 import {
   LayoutDashboard,
   TriangleAlert,

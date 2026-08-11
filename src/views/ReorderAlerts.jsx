@@ -1,3 +1,8 @@
+/**
+ * Reorder / Low-Stock — "what do I buy today?"
+ * Lists SKUs at or below reorder point with a suggested order quantity and
+ * the value of covering them. Selector: lowStock().
+ */
 import { useState } from "react";
 import { TriangleAlert, PackageX, ShoppingCart, DollarSign, CheckCircle2, X } from "lucide-react";
 import ViewHead from "../components/ViewHead";

@@ -1,3 +1,10 @@
+/**
+ * Inventory Overview — "where do we stand?"
+ * Headline KPIs and inventory value split by category and location, plus a
+ * six-month on-hand trend. Location scope filters on-shelf (stores) and
+ * off-shelf (DCs) independently.
+ * Selectors: totals(), scopedRows(), unitsByCategory(); data: STOCK_TREND.
+ */
 import { useState } from "react";
 import { Package, Store, Warehouse, DollarSign, TriangleAlert, Filter, RotateCcw } from "lucide-react";
 import ViewHead from "../components/ViewHead";

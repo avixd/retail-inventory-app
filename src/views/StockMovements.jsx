@@ -1,3 +1,7 @@
+/**
+ * Stock Movements — recent inbound / outbound / adjustment ledger.
+ * Source: MOVEMENTS.
+ */
 import { useState } from "react";
 import { ArrowDownToLine, ArrowUpFromLine, Scale, SlidersHorizontal } from "lucide-react";
 import ViewHead from "../components/ViewHead";

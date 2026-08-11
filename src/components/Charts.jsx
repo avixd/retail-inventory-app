@@ -1,3 +1,8 @@
+/**
+ * Shared visualisation layer. Wraps Recharts into a small, themed vocabulary
+ * (Area / Bar / Pie / Scatter + a ChartCard frame) so the nine views compose
+ * charts consistently instead of each configuring Recharts from scratch.
+ */
 import {
   ResponsiveContainer,
   AreaChart, Area,

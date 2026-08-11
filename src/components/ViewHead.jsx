@@ -1,3 +1,4 @@
+/** Standard heading block shown at the top of each view. */
 import { ChevronRight } from "lucide-react";
 
 export default function ViewHead({ viewLabel, title, desc, right }) {

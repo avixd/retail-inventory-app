@@ -1,3 +1,9 @@
+/**
+ * Supplier Performance — weighted supplier scorecards, cohort segmentation
+ * (Strategic / Preferred / Approved / Watchlist), spend Pareto, and
+ * payment-terms / working-capital analysis.
+ * Selectors: supplierMetrics(), spendContribution(), cohortSummary().
+ */
 import { useState } from "react";
 import {
   Building2, DollarSign, Package, TrendingUp, Timer, CalendarClock, ArrowRight,

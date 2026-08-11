@@ -1,3 +1,11 @@
+/**
+ * Application shell + client-side view router.
+ *
+ * Navigation is one piece of state (`active`): the Sidebar sets it, the VIEWS
+ * map turns it into a component, and that component is rendered. No routing
+ * library — a single state variable and a lookup is all nine self-contained
+ * views need.
+ */
 import { useState } from "react";
 import Header from "./components/Header";
 import Sidebar, { NAV_ITEMS } from "./components/Sidebar";

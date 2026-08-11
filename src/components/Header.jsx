@@ -1,3 +1,4 @@
+/** Top application bar (branding + global chrome). Presentational only. */
 import { Boxes, Search, Bell } from "lucide-react";
 
 export default function Header() {

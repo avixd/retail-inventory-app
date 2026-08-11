@@ -1,3 +1,16 @@
+/**
+ * Domain model + business logic for the retail inventory dashboard.
+ *
+ * This single module is the app's "database": it defines the core retail
+ * entities (warehouses, suppliers, products, stock, bins, purchase orders,
+ * invoices, transfers, movements, GRNs) and a library of PURE selector
+ * functions over them — reorder detection, supplier scoring, spend Pareto,
+ * PO lifecycle roll-ups, warehouse bin layout, and so on.
+ *
+ * Design rule: views never compute business logic. They call a selector and
+ * render the result, so every figure on screen has a single source of truth.
+ * All data is synthetic, for demonstration only. Figures are in CAD.
+ */
 /* ============================================================
    Shared dummy data for the Retail Inventory demo app.
    All static/in-memory — nothing persists. Every view reads
@@ -628,5 +641,6 @@ export const STOCK_TREND = [
   { month: "Jul", onShelf: 936, offShelf: 2165 },
 ];
 
+/* CAD currency formatter (Canadian locale, whole-dollar). */
 export const CAD = (n) =>
   n.toLocaleString("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 });

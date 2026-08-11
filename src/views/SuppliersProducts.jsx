@@ -1,3 +1,8 @@
+/**
+ * Suppliers & Products — master data: the SKU catalogue (cost, price, margin)
+ * and the supplier list, with drill-down from a supplier to the SKUs it
+ * supplies.
+ */
 import { useState } from "react";
 import { Contact, Package, Mail, Clock3, Star } from "lucide-react";
 import ViewHead from "../components/ViewHead";

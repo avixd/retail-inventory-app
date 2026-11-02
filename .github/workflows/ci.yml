@@ -1,0 +1,32 @@
+name: CI
+
+# Front end: lint, production build and an npm vulnerability audit on every push
+# and pull request. (The backend's CI runs in its own private repository.)
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+        env:
+          VITE_READ_ONLY: "true"

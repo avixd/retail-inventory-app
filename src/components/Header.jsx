@@ -1,5 +1,6 @@
 /** Top application bar (branding + global chrome). Presentational only. */
 import { Boxes, Search, Bell } from "lucide-react";
+import DataStatus from "./DataStatus";
 
 export default function Header() {
   return (
@@ -21,6 +22,7 @@ export default function Header() {
         </div>
 
         <div className="topbar__right">
+          <DataStatus />
           <div className="topbar__search">
             <Search size={15} />
             <input placeholder="Search SKUs…" aria-label="Search SKUs" />

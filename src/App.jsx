@@ -18,6 +18,7 @@ import GoodsReceipt from "./views/GoodsReceipt";
 import TransferOrders from "./views/TransferOrders";
 import SuppliersProducts from "./views/SuppliersProducts";
 import SupplierPerformance from "./views/SupplierPerformance";
+import { useDataStatus } from "./data/useDataStatus";
 import "./App.css";
 
 const VIEWS = {
@@ -34,6 +35,9 @@ const VIEWS = {
 
 function App() {
   const [active, setActive] = useState("overview");
+  // Bumps when snapshot or live data replaces the shared arrays; keying the view
+  // on it remounts the screen so every derived number is recomputed.
+  const { version } = useDataStatus();
   const ActiveView = VIEWS[active];
   const index = NAV_ITEMS.findIndex((n) => n.id === active);
   const label = NAV_ITEMS[index]?.label ?? "";
@@ -43,7 +47,7 @@ function App() {
       <Header />
       <Sidebar active={active} onSelect={setActive} />
       <main className="main">
-        <ActiveView viewLabel={label} navLabel={label} />
+        <ActiveView key={`${active}-${version}`} viewLabel={label} navLabel={label} />
       </main>
     </div>
   );

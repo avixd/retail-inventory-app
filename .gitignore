@@ -25,3 +25,23 @@ dist-ssr
 
 # Internal planning (not for public repo)
 portfolio-plan.md
+
+# Secrets and local environments (never commit)
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+
+# Backend code lives in the private retail-inventory-backend repo; never commit it here.
+# (Its design docs are published under docs/backend/: they contain no code or secrets.)
+/backend/
+/pipeline/
+/render.yaml

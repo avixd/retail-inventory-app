@@ -1071,3 +1071,7 @@
   .filter-bar__meta { margin-left: 0; flex-basis: 100%; }
   .shelf-split { grid-template-columns: 1fr; }
 }
+
+/* View-only public demo: disabled action buttons */
+.btn:disabled,
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; }

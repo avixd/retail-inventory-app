@@ -260,7 +260,8 @@ export default function InventoryOverview({ viewLabel }) {
         </ChartCard>
         <ChartCard title="On-hand trend" subtitle="Last 6 months · all SKUs · unfiltered">
           <AreaViz
-            data={STOCK_TREND}
+            // Copy: Recharts freezes the data it's given, which would block live hydration.
+            data={STOCK_TREND.map((r) => ({ ...r }))}
             xKey="month"
             series={[
               { key: "onShelf", name: "On shelf", color: PALETTE.teal },

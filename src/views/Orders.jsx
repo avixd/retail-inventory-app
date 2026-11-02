@@ -16,6 +16,7 @@ import {
   supplierName, skuName, poTotal, poUnits, statusPill, CAD,
   poStatusSummary, avgPoCycleTime, suppliersByTerms, outstandingByTerms,
 } from "../data/inventory";
+import { READ_ONLY, VIEW_ONLY_TIP } from "../data/dataSource";
 
 const TABS = [
   { id: "place", label: "Place PO", icon: FilePlus2 },
@@ -102,6 +103,7 @@ function PlacePO() {
 
   const submit = (e) => {
     e.preventDefault();
+    if (READ_ONLY) return;
     setConfirm({ po: "PO-5012", supplier: supplierName(supplier), units, total, expected });
   };
 
@@ -185,7 +187,10 @@ function PlacePO() {
           </button>
 
           <div className="form-actions">
-            <button className="btn" type="submit"><Send size={15} /> Submit PO</button>
+            <button className="btn" type="submit" disabled={READ_ONLY}
+                    title={READ_ONLY ? VIEW_ONLY_TIP : undefined}>
+              <Send size={15} /> Submit PO
+            </button>
             <span className="muted-note">
               {units} units · <strong>{CAD(total)}</strong> total — demo only, nothing is sent.
             </span>

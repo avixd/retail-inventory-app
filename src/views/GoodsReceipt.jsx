@@ -10,12 +10,13 @@ import {
   PURCHASE_ORDERS, WAREHOUSES, GRNS,
   supplierName, skuName, statusPill,
 } from "../data/inventory";
-
-const OPEN_POS = PURCHASE_ORDERS.filter((p) => ["Open", "Partially Received"].includes(p.status));
+import { READ_ONLY, VIEW_ONLY_TIP } from "../data/dataSource";
 
 export default function GoodsReceipt({ viewLabel }) {
+  // Computed per render (not at module load) so it reflects snapshot/live data.
+  const OPEN_POS = PURCHASE_ORDERS.filter((p) => ["Open", "Partially Received"].includes(p.status));
   const [poId, setPoId] = useState(OPEN_POS[0]?.po ?? "");
-  const [warehouse, setWarehouse] = useState("WH-01");
+  const [warehouse, setWarehouse] = useState(OPEN_POS[0]?.shipTo ?? "WH-01");
   const po = OPEN_POS.find((p) => p.po === poId);
 
   const [received, setReceived] = useState(() =>
@@ -33,12 +34,13 @@ export default function GoodsReceipt({ viewLabel }) {
   const totalReceived = Object.values(received).reduce((s, v) => s + (Number(v) || 0), 0);
 
   const post = () => {
+    if (READ_ONLY || !po) return;
     const grnNo = `GRN-${702 + recent.length - GRNS.length}`;
     const entry = {
       grn: grnNo,
       po: po.po,
       supplierId: po.supplierId,
-      received: "2026-07-25",
+      received: new Date().toISOString().slice(0, 10),
       warehouse,
       lines: po.lines.length,
       units: totalReceived,
@@ -114,7 +116,10 @@ export default function GoodsReceipt({ viewLabel }) {
               </table>
 
               <div className="form-actions">
-                <button className="btn" onClick={post}><PackageCheck size={15} /> Post goods receipt</button>
+                <button className="btn" onClick={post} disabled={READ_ONLY}
+                        title={READ_ONLY ? VIEW_ONLY_TIP : undefined}>
+                  <PackageCheck size={15} /> Post goods receipt
+                </button>
                 <span className="muted-note">
                   Receiving <strong>{totalReceived}</strong> units into {warehouse} — demo only.
                 </span>

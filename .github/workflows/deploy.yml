@@ -1,17 +1,21 @@
 name: Deploy to GitHub Pages
 
-# Builds the Vite app and publishes dist/ to GitHub Pages on every push to master.
+# Builds the site and publishes it. Runs on push to master, on demand, and when
+# the private backend repo dispatches it after a deliberate data advance.
+# The data snapshot (public/snapshot/) is committed and frozen at the data
+# cut-off, so this repo holds no credentials and the site never depends on the
+# backend being awake.
 on:
   push:
     branches: [master]
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -19,6 +23,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,7 +31,42 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run build
+
+      - name: Refresh data snapshot from the read-only API (optional)
+        # The repo ships a snapshot taken at the data cut-off, so the site never
+        # depends on the API. If the API is configured and reachable, refresh it;
+        # files are swapped in only if every download succeeds.
+        if: vars.API_BASE_URL != ''
+        continue-on-error: true
+        env:
+          API: ${{ vars.API_BASE_URL }}
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 6 --retry-delay 15 --retry-all-errors "$API/health" -o /dev/null  # wake the free tier
+          tmp=$(mktemp -d)
+          while read -r name path; do
+            curl -fsS --compressed --retry 3 --retry-all-errors --max-time 60 "$API$path" -o "$tmp/$name"
+          done <<'LIST'
+          dataset.json /api/v1/dataset
+          meta.json /api/v1/meta
+          scorecard.json /api/v1/suppliers/scorecard
+          spend-pareto.json /api/v1/suppliers/spend-pareto
+          procurement-summary.json /api/v1/procurement/summary
+          replenishment.json /api/v1/replenishment/recommendations?limit=200
+          abc-xyz.json /api/v1/analytics/abc-xyz
+          kpis.json /api/v1/analytics/kpis
+          forecast.json /api/v1/forecast?limit=200
+          LIST
+          jq -c '.meta.source = "snapshot"' "$tmp/dataset.json" > "$tmp/ds" && mv "$tmp/ds" "$tmp/dataset.json"
+          jq -n --arg at "$(date -u +%FT%TZ)" --slurpfile m "$tmp/meta.json"             '{generatedAt: $at, asOf: $m[0].dataAsOf}' > "$tmp/manifest.json"
+          cp "$tmp"/*.json public/snapshot/
+          cat public/snapshot/manifest.json
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
+          VITE_READ_ONLY: "true"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -34,6 +74,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

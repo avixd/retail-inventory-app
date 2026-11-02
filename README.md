@@ -4,7 +4,9 @@ An interactive "control tower" for multi-warehouse, multi-store retail inventory
 
 **Live demo:** https://avixd.github.io/retail-inventory-app/
 
-> **Demo project.** All data is synthetic and generated for demonstration; it does not represent any real company, supplier or system. The app is a static front end with no backend and no network calls — every action (raising a PO, posting a goods receipt, transferring stock) runs in memory and resets on refresh. Nothing is stored, sent or transmitted. Figures are in Canadian dollars (CAD).
+> **Demo project.** All data is synthetic and generated for demonstration; it does not represent any real company, supplier or system. The public site is view-only: action buttons are disabled and nothing a visitor does is stored or sent. Figures are in Canadian dollars (CAD).
+
+> **Data: 24 months of simulated history, frozen at 31 Oct 2026.** The numbers come from a Postgres backend: an append-only stock ledger, demand forecasts and statistical reorder points, served through a read-only API. The site ships a snapshot of that data, so it loads instantly and never depends on a server being awake; nothing a visitor does changes the database. Backend code is in a private repository (available on request); its design, security and cost documentation is public in [docs/backend/](docs/backend/README.md).
 
 ## The business problem
 
@@ -46,36 +48,25 @@ The full reasoning, including trade-offs and what a production version would cha
 ## High-level architecture
 
 ```mermaid
-flowchart TD
-    subgraph Browser["User's browser (static SPA)"]
-        M["main.jsx<br/>React entry"]
-        A["App.jsx<br/>client-side view router"]
-        H[Header]
-        S["Sidebar<br/>NAV_ITEMS"]
-        V["Active view<br/>(1 of 9)"]
-        C["Shared components<br/>Charts · ViewHead"]
+flowchart LR
+    subgraph Private["Private repo (backend)"]
+        P["Pipeline<br/>simulate → ledger → analytics<br/>forecasts · reorder points · DQ checks"]
     end
-
-    DM[("src/data/inventory.js<br/>domain model + selectors<br/>(in-memory, no backend)")]
-
-    M --> A
-    A --> H
-    A --> S
-    A --> V
-    V --> C
-    V -->|reads via selectors| DM
-    C -->|reads via selectors| DM
-    S -->|sets active view| A
-
-    subgraph Hosting["GitHub Pages (free static hosting)"]
-        CDN["Static bundle<br/>HTML · JS · CSS"]
+    DB[("Postgres (Neon)<br/>core ledger + analytics star schema")]
+    API["Read-only API (FastAPI, Render)<br/>GET only · cached · rate-limited"]
+    subgraph Public["This repo (public)"]
+        Snap["public/snapshot/<br/>data at the cut-off"]
+        UI["React dashboard<br/>9 views"]
     end
-
-    GHA["GitHub Actions<br/>build + deploy"] -->|vite build| CDN
-    CDN -.->|serves| M
+    P -- "etl role" --> DB
+    API -- "read-only role" --> DB
+    Snap -->|"1. instant load"| UI
+    API -.->|"2. live data when awake"| UI
 ```
 
-No server, no database, no authentication, no external API. The entire application is static files, which is what makes public hosting free, read-only for visitors, and impossible to expose credentials through — there are none in the bundle.
+The dashboard loads the committed snapshot first, then switches to the live API when it answers; a badge in the header says which ("Snapshot · as of…" or "Live · as of…"). Views keep their original design: `hydrate()` replaces the in-memory model's contents with backend data, so every selector and chart runs unchanged on real volumes (60 SKUs, 8 sites, ~200k ledger rows).
+
+**Security posture:** this repo contains no secrets and needs none. The only network call the page may make is to the read-only API (enforced by a Content-Security-Policy). The API's database role can only `SELECT` from analytics views, with a read-only transaction default, query timeouts and connection limits. Details: [docs/backend/security.md](docs/backend/security.md).
 
 ## Tech stack
 
@@ -87,28 +78,35 @@ No server, no database, no authentication, no external API. The entire applicati
 | Icons | lucide-react | Consistent, lightweight icon set |
 | Type font | Inter (self-hosted) | No third-party font CDN call |
 | Hosting | GitHub Pages via GitHub Actions | Free, static, auto-deployed on push |
+| Backend (private) | Python 3.12, FastAPI, Postgres 16, numpy/pandas | Read-only API; forecasting and replenishment engines |
+| Backend hosting | Render (API) + Neon (Postgres), free tiers | $0 with no payment method, so no bill is possible ([cost](docs/backend/cost.md)) |
+| Testing | pytest, Node test runner | 40 API, 29 pipeline and 21 front-end contract tests |
 
 ## Documentation
 
+Start at **[docs/README.md](docs/README.md)**.
+
 | Document | Contents |
 |---|---|
-| [docs/architecture.md](docs/architecture.md) | System model, data model and selectors, component hierarchy, data-flow and deployment diagrams |
-| [docs/technical-walkthrough.md](docs/technical-walkthrough.md) | The solution approach at each stage, view by view, with the key logic behind each screen |
-| [docs/decisions.md](docs/decisions.md) | Tools used and why, assumptions, pros, cons and limitations of the approach |
+| [docs/backend/README.md](docs/backend/README.md) | End-to-end overview, good-practice alignment, pros and cons |
+| [docs/backend/security.md](docs/backend/security.md) | Threat model, controls, breach-response playbook |
+| [docs/backend/cost.md](docs/backend/cost.md) | Why it runs at $0 and what keeps it there |
+| [docs/backend/high-level-design.md](docs/backend/high-level-design.md) · [low-level-design.md](docs/backend/low-level-design.md) | Requirements, schema, API contract, forecasting and replenishment maths |
+| [docs/backend/adr/](docs/backend/adr/README.md) | Architecture decisions and why |
+| [docs/architecture.md](docs/architecture.md) | Front-end data model, selectors and component hierarchy |
+| [docs/technical-walkthrough.md](docs/technical-walkthrough.md) | Each view and the logic behind it |
+| [docs/decisions.md](docs/decisions.md) | Front-end tools, assumptions and limitations |
 
 ## Run locally
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+npm run dev      # http://localhost:5173/retail-inventory-app/  (uses the committed snapshot)
+npm run build    # static output in dist/, with the Content-Security-Policy injected
+npm run test:api # contract tests against a running API (API_URL, default http://localhost:8000)
 ```
 
-Production build:
-
-```bash
-npm run build    # static output in dist/
-npm run preview  # serve the built bundle
-```
+Running the backend too: [docs/backend/local-dev.md](docs/backend/local-dev.md).
 
 ## Licence
 

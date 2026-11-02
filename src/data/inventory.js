@@ -12,10 +12,14 @@
  * All data is synthetic, for demonstration only. Figures are in CAD.
  */
 /* ============================================================
-   Shared dummy data for the Retail Inventory demo app.
-   All static/in-memory — nothing persists. Every view reads
-   from here so the numbers stay consistent across tabs.
+   Shared data for every view. These arrays start as built-in
+   demo data (so the app runs offline) and are replaced IN PLACE
+   by hydrate() when the snapshot or the live API responds, so
+   every import keeps pointing at the same, current objects.
    ============================================================ */
+
+/* Year of the data's as-of date (for supplier tenure); updated by hydrate(). */
+let asOfYear = 2026;
 
 /* ---------- Warehouses & stores (stock locations) ---------- */
 export const WAREHOUSES = [
@@ -507,7 +511,7 @@ export const COHORT_META = {
 };
 
 export function supplierScore(s) {
-  const years = 2026 - s.since;
+  const years = asOfYear - s.since;
   const parts = {
     onTime: clamp01(s.onTimeRate, 0, 100),
     quality: clamp01(100 - s.defectRate * 8, 0, 100),
@@ -534,7 +538,7 @@ export function supplierMetrics() {
       score,
       parts,
       cohort: supplierCohort(score),
-      years: 2026 - s.since,
+      years: asOfYear - s.since,
       leadVariance: s.actualLeadDays - s.leadDays,
       termsGapDays: termDays(s.preferredTerms) - termDays(s.terms),
     };
@@ -644,3 +648,40 @@ export const STOCK_TREND = [
 /* CAD currency formatter (Canadian locale, whole-dollar). */
 export const CAD = (n) =>
   n.toLocaleString("en-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 });
+
+/* ---------- Hydration (snapshot / live API) ----------
+   Replaces each shared array's contents in place (never reassigns), so modules
+   that imported them keep valid references. Derived lists are recomputed.
+   Never pass these arrays straight to a chart: Recharts 3 freezes its `data`,
+   after which they can't be refreshed. Pass a copy instead.                     */
+function replaceArray(target, next) {
+  if (!Array.isArray(next)) return;
+  if (Object.isFrozen(target)) throw new Error("hydrate: a shared array was frozen (passed to a chart without copying)");
+  target.splice(0, target.length, ...next);
+}
+
+function replaceObject(target, next) {
+  if (!next || typeof next !== "object") return;
+  Object.keys(target).forEach((k) => delete target[k]);
+  Object.assign(target, next);
+}
+
+export function hydrate(d) {
+  if (!d) return;
+  replaceArray(WAREHOUSES, d.warehouses);
+  replaceArray(SUPPLIERS, d.suppliers);
+  replaceArray(PRODUCTS, d.products);
+  replaceArray(STOCK, d.stock);
+  replaceArray(BINS, d.bins);
+  replaceArray(PURCHASE_ORDERS, d.purchaseOrders);
+  replaceArray(INVOICES, d.invoices);
+  replaceArray(TRANSFER_ORDERS, d.transferOrders);
+  replaceArray(MOVEMENTS, d.movements);
+  replaceArray(GRNS, d.grns);
+  replaceArray(STOCK_TREND, d.stockTrend);
+  replaceObject(SHELF, d.shelf);
+  replaceObject(EMPTY_BINS, d.emptyBins);
+  replaceArray(STORES, WAREHOUSES.filter((w) => w.type === "Retail Store"));
+  replaceArray(DCS, WAREHOUSES.filter((w) => w.type === "Distribution Center"));
+  if (d.meta?.asOf) asOfYear = Number(String(d.meta.asOf).slice(0, 4));
+}

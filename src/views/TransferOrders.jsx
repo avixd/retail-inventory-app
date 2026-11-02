@@ -12,6 +12,7 @@ import {
   TRANSFER_ORDERS, WAREHOUSES, PRODUCTS,
   warehouseName, skuName, statusPill,
 } from "../data/inventory";
+import { READ_ONLY, VIEW_ONLY_TIP } from "../data/dataSource";
 
 const TR_STAGES = ["Draft", "Picked", "In Transit", "Received"];
 const trStageIndex = (s) => Math.max(0, TR_STAGES.indexOf(s));
@@ -35,7 +36,7 @@ function NewTransferForm({ onSubmit }) {
         <span className="pill pill--accent">Demo form</span>
       </div>
       <div className="panel__body">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(units); }}>
+        <form onSubmit={(e) => { e.preventDefault(); if (!READ_ONLY) onSubmit(units); }}>
           <div className="grid-2">
             <div className="field">
               <label>From warehouse</label>
@@ -85,7 +86,10 @@ function NewTransferForm({ onSubmit }) {
           <button type="button" className="btn btn--ghost btn--sm" onClick={addLine}><Plus size={14} /> Add item</button>
 
           <div className="form-actions">
-            <button className="btn" type="submit"><Send size={15} /> Create transfer</button>
+            <button className="btn" type="submit" disabled={READ_ONLY}
+                    title={READ_ONLY ? VIEW_ONLY_TIP : undefined}>
+              <Send size={15} /> Create transfer
+            </button>
             <span className="muted-note">
               <span className="route">{fromWh} <ArrowRight size={14} /> {toWh}</span> · {units} units — demo only.
             </span>

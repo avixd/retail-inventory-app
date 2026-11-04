@@ -19,7 +19,7 @@ flowchart LR
         Models[("models: ABC-XYZ · forecasts<br/>replenishment · KPIs")]
         Views["API views v_* and dataset views v_ds_*"]
     end
-    DQ{{"4 · 7 data-quality checks<br/>(error = whole run rolled back)"}}
+    DQ{{"4 · 8 data-quality checks<br/>(error = whole run rolled back)"}}
     subgraph Pub["5 · Publish"]
         API["Read-only API<br/>/api/v1/*"]
         Snap["Month-end snapshots<br/>12 × public/snapshot/&lt;date&gt;/"]
@@ -48,7 +48,7 @@ Data is **frozen at 31 Oct 2026** ([ADR 0007](adr/0007-frozen-dataset-cut-off.md
 
 ## 2. Data-quality gates
 
-All seven run inside the load's transaction, after the analytics, so a failure leaves the previous good state untouched.
+All eight run inside the load's transaction, after the analytics, so a failure leaves the previous good state untouched.
 
 | Check | Severity | Guarantees |
 |---|---|---|
@@ -59,6 +59,7 @@ All seven run inside the load's transaction, after the analytics, so a failure l
 | `inventory_fact_reconciles` | error | The inventory fact's latest day equals the ledger's on-hand, row for row |
 | `sales_loaded_through_as_of` | error | Sales are loaded through exactly the simulated date |
 | `open_po_without_plan` | warn | Every open PO has a pending simulator event, so none is stuck forever |
+| `bin_over_capacity` | warn | No DC bin holds more than its capacity. **Currently fails: 110 of 192 bins at 31 Oct** (known simulator gap, see [business-review.md §7](business-review.md#7-critique)) |
 
 ## 3. Models, briefly
 

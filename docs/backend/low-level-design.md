@@ -313,15 +313,31 @@ Each job is idempotent for a given date, logs a row in `ops.job_run`, and runs a
 
 Data-quality checks: no negative end-of-day on hand; every active store has sales rows for the simulated day; no orphan foreign keys; receipts never exceed ordered quantity; `fact_inventory_daily` agrees with the ledger total for a random sample; latest model run exists for every output table.
 
-## 7. Front-end integration
+## 7. Front-end integration (as built, 03/11/2026)
 
-- `client.js`: `fetch` with an `AbortController` timeout of 8 s, JSON parsing, problem+json error mapping. Base URL from `import.meta.env.VITE_API_BASE_URL`; if it's empty the app runs on the snapshot alone.
-- `useLiveData(key, path, params)`: returns `{ data, source, asOf, error }`. Loads `${BASE_URL}snapshot/${key}.json` first, then requests the live endpoint; on timeout it keeps the snapshot and retries after 15, 30 and 60 seconds, then stops.
-- On app start, one `GET /health` wakes the Render service while the visitor reads the snapshot.
-- The snapshot pre-computes the default filters (all, stores, DCs and each location for the overview; first page for lists). Filters outside that set show "available when live".
-- `DataStatus` badge in the header: green "Live · as of …" or grey "Snapshot · as of …".
-- The selectors in `src/data/inventory.js` are retired once their endpoint is live. The CAD formatter and presentation helpers stay.
-- Action buttons render disabled with a "View-only demo" tooltip when the build flag `VITE_READ_ONLY=true`, which the production deploy sets (FR-08). It's a build flag rather than an API response so it works even when the API is asleep.
+| Module | Responsibility |
+|---|---|
+| `src/data/dataSource.js` | Loads `snapshot/index.json`, then the default (latest) month; `selectMonth(date)` swaps the whole dataset; `goLive()` replaces only the **latest** month with live API data and never overrides a past month the viewer chose; `snapshotFile()` caches each immutable file once per visit |
+| `src/data/inventory.js` | The original in-memory model and selectors. `hydrate()` replaces array contents in place so every view runs unchanged on backend data. Shared arrays are never passed straight to charts (Recharts 3 freezes them) |
+| `src/data/summary.js` | Pure functions for the Executive Summary: `inventoryInvestment`, `salesAtRisk`, `monthKpis`, `kpiTrend`, `supplierConcentration`, `payables`, `summarise`. The selected and prior months go through the same code, so deltas are like for like |
+| `src/views/ExecutiveSummary.jsx` | Six finding cards (value, delta coloured by whether up is good, takeaway, drill-down), 12-month network GMROI vs stock-out chart, method notes |
+| `src/components/DataStatus.jsx` | Source badge (Snapshot / History / Live) and the "As of" month selector; visible on phones too |
+| `vite.config.js` | Injects a Content-Security-Policy: the page may only connect to itself and the configured API |
+
+**Summary metric definitions**
+
+| Metric | Formula | Source file |
+|---|---|---|
+| Inventory investment | Σ (on shelf + off shelf) × unit cost; reserve share = off-shelf value ÷ total | `dataset.json` |
+| Sales at risk | Σ over positions with status OUT or BELOW_ROP of max(0, d̄ × L̄ − on hand) × unit price | `replenishment.json` (rows are urgency-sorted, so all at-risk rows are within the 200 exported) |
+| Stock-out rate | Share of store-SKU-days ending with zero on hand | `kpis-network.json` |
+| GMROI, turns, days of supply | Store gross margin (or COGS) ÷ average daily inventory at cost over stores **and** DCs, × 365 ÷ days | `kpis-network.json` |
+| Supplier concentration | Top-3 share of YTD ordered spend; spend with Watchlist suppliers (score < 58) | `spend-pareto.json`, `scorecard.json` |
+| Overdue payables | Σ overdue amount of open supplier invoices | `procurement-summary.json` |
+
+**Read-only build** (`VITE_READ_ONLY=true`, set by the Pages deploy): every form is wrapped in a disabled `<fieldset>`, action buttons are disabled with a "View only" label, and handlers return early as a second guard.
+
+**Tests:** `npm run test:unit` (summary maths with hand-worked fixtures; every published month hydrates, every selector and summary metric is finite, dates match folders) and `npm run test:api` (contract against a running API).
 
 ## 8. CI/CD workflows
 

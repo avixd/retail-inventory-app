@@ -39,9 +39,9 @@ The system exists to answer the questions a retail inventory and procurement tea
 | FR-01 | Store retail master and transactional data in Postgres: locations, suppliers, product hierarchy, stock movements, bins, purchase orders and lines, goods receipts, transfers, supplier invoices, daily sales | BR-01 to BR-05 |
 | FR-02 | Derive stock on hand from an append-only movement ledger, not from a stored balance | BR-01 |
 | FR-03 | Generate 24 months of realistic synthetic history (two full seasonal cycles, the minimum for weekly seasonal forecasting), with seasonality, promotions, Canadian holidays and lead-time variability, from a seeded, repeatable generator | All |
-| FR-04 | Advance the data by one simulated day every night so dates stay current | All |
+| FR-04 | ~~Advance the data by one simulated day every night~~ **Superseded 03/11/2026** ([ADR 0007](adr/0007-frozen-dataset-cut-off.md)): data is frozen at a cut-off date; advancing it is a manual, deliberate release | All |
 | FR-05 | Expose read-only JSON endpoints covering everything the nine existing views display, with filtering and pagination | BR-01 to BR-05 |
-| FR-06 | Publish a static JSON snapshot of the read endpoints with each front-end deploy, refreshed nightly | NFR-04 |
+| FR-06 | Publish static JSON snapshots with the front end: twelve month-ends up to the cut-off, built offline by `scripts/release-data.sh` ([ADR 0008](adr/0008-month-end-history-snapshots.md)) | NFR-04 |
 | FR-07 | Front end loads the snapshot first, then switches to live API data when available, and shows which source and as-of time is on screen | NFR-04 |
 | FR-08 | Front-end action buttons (raise PO, post GRN, create transfer) are visibly disabled as "view-only demo" in production | NFR-02 |
 | FR-09 | Admin write endpoints for POs, GRNs and transfers exist in code, are tested, and run only in local/dev environments | Engineering depth |
@@ -53,6 +53,10 @@ The system exists to answer the questions a retail inventory and procurement tea
 | FR-15 | New front-end view: Forecast & Replenishment; KPI additions to existing views | BR-06 to BR-08 |
 | FR-16 | Power BI report connected to the analytics layer through a read-only role; .pbix and screenshots committed | BR-09 |
 | FR-17 | Data quality checks after every nightly run, with results stored and the job failing loudly on a breach | NFR-06 |
+| FR-18 | Executive Summary landing view: six findings (inventory investment, sales at risk, stock-out rate, network GMROI, supplier concentration, overdue payables), each vs the prior month-end, with a takeaway, a drill-down link and its method | BR-01 to BR-08 |
+| FR-19 | "As of" selector replays every view at any of the last twelve month-ends, on desktop and mobile, without a database call | BR-01, BR-07 |
+| FR-20 | Network KPIs: GMROI and turns over store **and** DC inventory (per-site averages overstate GMROI ~7×) | BR-07, BR-08 |
+| FR-21 | Data dictionary generated from schema comments; CI fails if it drifts | NFR-06 |
 
 ## 4. Non-functional requirements
 
@@ -159,20 +163,21 @@ sequenceDiagram
 
 A sleeping Render service takes 30 to 60 seconds to start, so the visitor never waits on it: the snapshot is on screen first and the live data replaces it when ready.
 
-### 7.2 Nightly pipeline
+### 7.2 Data release (replaces the nightly pipeline)
 
 ```mermaid
 flowchart LR
-    T["Cron trigger<br/>(GitHub Actions)"] --> S["simulate_day<br/>sales, receipts, movements"]
-    S --> R["refresh analytics<br/>materialised views"]
-    R --> F["forecast + replenishment<br/>+ ABC-XYZ + scorecard"]
-    F --> Q{"data-quality<br/>checks pass?"}
-    Q -->|yes| E["export snapshot JSON"]
-    E --> D["build + deploy<br/>GitHub Pages"]
-    Q -->|no| X["fail job, keep last good snapshot,<br/>record in ops.job_run"]
+    C["Owner moves DATA_CUTOFF<br/>(deliberate release)"] --> B["release-data.sh<br/>local database only"]
+    B --> S["seed to first month-end,<br/>then simulate month by month"]
+    S --> A["analyse as of each month-end<br/>forecast · replenishment · ABC-XYZ · KPIs"]
+    A --> Q{"8 data-quality<br/>checks pass?"}
+    Q -->|yes| E["export 12 month-end snapshots<br/>+ data dictionary"]
+    E --> T["front-end tests on every month"]
+    T --> R["owner reviews, commits,<br/>Pages deploys"]
+    Q -->|no| X["stop: nothing is published"]
 ```
 
-If any step fails, the site keeps serving the last good snapshot. Nothing half-finished is published.
+Nothing runs on a schedule and nothing writes to a database when someone opens the site ([ADR 0007](adr/0007-frozen-dataset-cut-off.md), [ADR 0008](adr/0008-month-end-history-snapshots.md)). Full detail: [data-pipeline.md](data-pipeline.md).
 
 ## 8. Environments
 

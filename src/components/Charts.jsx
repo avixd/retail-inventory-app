@@ -33,6 +33,11 @@ const axisProps = {
   axisLine: { stroke: "#e7edf1" },
 };
 
+// Value axes use compact labels (1.6k, 30k, 1.2M) so real volumes fit the fixed
+// axis width; a full "16,000" was being clipped to "6,000".
+const compact = new Intl.NumberFormat("en-CA", { notation: "compact", maximumFractionDigits: 1 });
+const valueAxis = { ...axisProps, tickFormatter: (v) => (typeof v === "number" ? compact.format(v) : v) };
+
 const tooltipStyle = {
   contentStyle: {
     borderRadius: 10,
@@ -76,7 +81,7 @@ export function AreaViz({ data, xKey, series, height = 220 }) {
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.grid} vertical={false} />
         <XAxis dataKey={xKey} {...axisProps} />
-        <YAxis {...axisProps} width={44} />
+        <YAxis {...valueAxis} width={44} />
         <Tooltip {...tooltipStyle} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 6 }} />
         {series.map((s) => (
@@ -111,13 +116,13 @@ export function BarViz({ data, xKey, series, height = 220, layout = "horizontal"
         <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.grid} vertical={vertical} horizontal={!vertical} />
         {vertical ? (
           <>
-            <XAxis type="number" {...axisProps} />
+            <XAxis type="number" {...valueAxis} />
             <YAxis type="category" dataKey={xKey} {...axisProps} width={92} />
           </>
         ) : (
           <>
             <XAxis dataKey={xKey} {...axisProps} />
-            <YAxis {...axisProps} width={44} />
+            <YAxis {...valueAxis} width={44} />
           </>
         )}
         <Tooltip {...tooltipStyle} />
@@ -137,7 +142,7 @@ export function LineViz({ data, xKey, series, height = 220 }) {
       <LineChart data={data} margin={{ top: 8, right: 8, left: -14, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.grid} vertical={false} />
         <XAxis dataKey={xKey} {...axisProps} />
-        <YAxis {...axisProps} width={44} />
+        <YAxis {...valueAxis} width={44} />
         <Tooltip {...tooltipStyle} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 6 }} />
         {series.map((s) => (
@@ -196,7 +201,7 @@ export function ParetoViz({ data, xKey, barKey, lineKey, barName, lineName, heig
       <ComposedChart data={data} margin={{ top: 8, right: 8, left: -14, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.grid} vertical={false} />
         <XAxis dataKey={xKey} {...axisProps} interval={0} angle={-32} textAnchor="end" height={70} />
-        <YAxis yAxisId="left" {...axisProps} width={54} />
+        <YAxis yAxisId="left" {...valueAxis} width={54} />
         <YAxis yAxisId="right" orientation="right" domain={[0, 100]} unit="%" {...axisProps} width={44} />
         <Tooltip {...tooltipStyle} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 6 }} />

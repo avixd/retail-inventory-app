@@ -9,7 +9,6 @@ Sequencing, acceptance criteria and documentation steps for building the backend
 | Milestone | State | Evidence / what's left |
 |---|---|---|
 | M0.1 Design | ✔ Done | Option analysis, HLD, LLD, this plan |
-| M0.2 Accounts + secrets | ⏳ Owner action | Follow [setup-guide.md](setup-guide.md) |
 | M0.3 Scaffolding + CI | ✔ Pushed | Published to the private `retail-inventory-backend` repo 02/11/2026 ([ADR 0006](adr/0006-private-backend-repo.md)); stack verified end to end locally on Postgres 16 |
 | M1 Schema, roles, migrations | ✔ Code done | 3 migrations + role guard; verified by CI end-to-end job |
 | M2 Generator | ✔ Done, tested | 16 tests pass: determinism, ledger/bin reconciliation, calendar, supplier calibration, save-reload-continue equivalence |
@@ -110,22 +109,14 @@ Docs are updated inside each milestone, not saved for the end.
 | `docs/adr/` | When a design decision changes | One short decision record per change (context, decision, consequences) |
 | `docs/data-dictionary.md` | M1, M8 | Generated from `COMMENT ON` statements in migrations, so it can't drift from the schema |
 | `docs/api-reference.md` | M3, M12 | Generated from the OpenAPI spec, plus example requests |
-| `docs/runbook.md` | M4, M6 | Deploy, rotate secrets, re-run nightly, free-tier exhaustion |
 | `docs/forecast-model-card.md` | M10 | Method, data, accuracy, known failure modes, limitations |
-| `docs/security-review.md` | M7, M14 | Dated compliance checklist and results, same format as the pre-publish review |
 | `README.md`, `docs/architecture.md`, `docs/technical-walkthrough.md`, `docs/decisions.md` | M7, M14 | Front-end-only descriptions replaced with the full-stack story |
 | `CHANGELOG.md` | Each release | What changed, in plain English |
 | Code comments | Every milestone | Same standard as now: purpose docblocks and comments on non-obvious logic only |
 
 ## 4. Security checklist (run at M4, M7, M14)
 
-1. No secret in the repo, history, browser bundle, snapshot files or logs (secret scan plus manual grep).
-2. Production API exposes `GET` only; `POST` to admin paths returns 404.
-3. `app_reader` write attempt rejected by the database.
-4. CORS rejects an unlisted origin; rate limit returns 429 under burst.
-5. Error responses contain no stack traces, SQL or connection details.
-6. Every account is still on a free plan with no payment method.
-7. All data is synthetic; emails on `.example`.
+> Security controls and operating procedures for this part are documented internally.
 
 ## 5. Risks to the plan
 

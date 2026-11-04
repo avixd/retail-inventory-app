@@ -69,7 +69,7 @@ flowchart LR
 
 The dashboard loads the committed snapshot first, then switches to the live API when it answers; a badge in the header says which ("Snapshot · as of…" or "Live · as of…"). Views keep their original design: `hydrate()` replaces the in-memory model's contents with backend data, so every selector and chart runs unchanged on real volumes (60 SKUs, 8 sites, ~200k ledger rows). Twelve month-end snapshots, built offline from the deterministic simulation, let the dashboard show any of the last twelve month-ends without touching a database.
 
-**Security posture:** this repo contains no secrets and needs none. The only network call the page may make is to the read-only API (enforced by a Content-Security-Policy). The API's database role can only `SELECT` from analytics views, with a read-only transaction default, query timeouts and connection limits. Details: [docs/backend/security.md](docs/backend/security.md).
+**Security posture:** this repo contains no secrets and needs none, and every visitor has a read-only view: the site is static files with no write path. Detailed security controls and operating procedures are documented internally, not in this repository.
 
 ## Tech stack
 
@@ -92,7 +92,6 @@ Start at **[docs/README.md](docs/README.md)**.
 | Document | Contents |
 |---|---|
 | [docs/backend/README.md](docs/backend/README.md) | End-to-end overview, good-practice alignment, pros and cons |
-| [docs/backend/security.md](docs/backend/security.md) | Threat model, controls, breach-response playbook |
 | [docs/backend/cost.md](docs/backend/cost.md) | Why it runs at $0 and what keeps it there |
 | [docs/backend/high-level-design.md](docs/backend/high-level-design.md) · [low-level-design.md](docs/backend/low-level-design.md) | Requirements, schema, API contract, forecasting and replenishment maths |
 | [docs/backend/adr/](docs/backend/adr/README.md) | Architecture decisions and why |

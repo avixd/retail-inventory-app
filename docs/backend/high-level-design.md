@@ -136,15 +136,7 @@ flowchart LR
 
 Security is layered so that a single mistake doesn't expose anything.
 
-| Layer | Control |
-|---|---|
-| Visitor → front end | Static files only. The bundle contains the public API URL and nothing else |
-| Visitor → API | `GET` only in production; write routes aren't registered (`ADMIN_API_ENABLED=false`). CORS allows only `https://avixd.github.io` and localhost. Per-IP rate limit. Security headers. Generic error messages (no stack traces) |
-| API → database | Connects as `app_reader`, a role with `SELECT` on approved views only and `default_transaction_read_only = on`. Even if a write route were exposed by mistake, the database would refuse the write |
-| Pipeline → database | Separate `etl_runner` role used only by GitHub Actions; credential stored as an encrypted Actions secret |
-| Migrations | Owner role used only by the migration job, never by the running API |
-| Secrets | Live only in Render environment settings and GitHub Actions secrets. CI runs a secret scanner on every push |
-| Data | 100% synthetic. Emails use the reserved `.example` domain. No personal data exists to leak |
+> Security controls and operating procedures for this part are documented internally.
 
 ## 7. Key flows
 

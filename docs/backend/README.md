@@ -44,11 +44,8 @@ flowchart LR
 | [data-pipeline.md](data-pipeline.md) | **End to end:** generate → ledger → analytics → checks → API/snapshots → screen; trace any number; release new data |
 | [metrics.md](metrics.md) | **KPI tree and definitions:** GMROI north star, drivers, guardrails, formulas, owners, data-derived targets (generated from `metrics/metrics.toml`) |
 | [data-dictionary.md](data-dictionary.md) | Every table, view and column, generated from the schema's own comments |
-| [security.md](security.md) | Threat model, controls, least privilege, **breach response playbook** |
 | [cost.md](cost.md) | Free-tier limits, usage, guardrails, why it can't bill |
 | [adr/](adr/) | Decisions made during the build and why |
-| [setup-guide.md](setup-guide.md) | One-off account and secret setup (browser only, ~20 min) |
-| [runbook.md](runbook.md) | Day-to-day operation and incidents |
 | [local-dev.md](local-dev.md) | Running the full stack on one machine, and the test suites |
 | [project-plan.md](project-plan.md) | Milestones and status |
 
@@ -57,11 +54,11 @@ flowchart LR
 | Area | Practice | Where |
 |---|---|---|
 | Data modelling | Append-only ledger as the source of truth; stock is derived, never overwritten. Separate star schema for analytics | Migrations 0001-0002 |
-| Security | Least-privilege database roles enforced by Postgres, not just code; secrets only in secret stores; defence in depth (GET-only routes + read-only role + read-only transactions) | [security.md](security.md) |
+| Security | Least-privilege database roles enforced by Postgres, not just code; secrets only in secret stores; defence in depth (GET-only routes + read-only role + read-only transactions) | security.md (internal) |
 | Reliability | Transactional, data-quality-gated loads; a fixed cut-off so every visit sees the same, reproducible data; migrations always run before a deploy; static snapshot fallback | `nightly.py`, `api-release.yml` |
 | Testing | Unit, integration on real Postgres, end-to-end pipeline in CI, front-end contract tests against the live API | [local-dev.md §6](local-dev.md#6-tests) |
 | Supply chain | Lockfiles, locked installs, dependency audits, Dependabot, pinned build image, secret scanning | `ci.yml`, `dependabot.yml` |
-| Operability | Structured JSON logs with request IDs, job-run history in the database, runbook and playbooks | `observability.py`, [runbook.md](runbook.md) |
+| Operability | Structured JSON logs with request IDs, job-run history in the database, runbook and playbooks | `observability.py`, runbook.md (internal) |
 | Analytics rigour | Forecasts back-tested against a seasonal-naive baseline and reported honestly (30.9% vs 38.2% WAPE) | [ADR 0003](adr/0003-forecasting-in-numpy.md) |
 | Documentation | Decisions recorded as ADRs; designs kept "as built" | [adr/](adr/) |
 

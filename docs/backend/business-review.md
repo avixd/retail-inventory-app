@@ -35,7 +35,7 @@ A multi-site retailer's inventory decisions (what to reorder, where capital is t
 1. **Decision-first, not chart-first.** The landing view states findings in sentences with a dollar figure and a "what to do next" link. Most inventory dashboards open on charts and leave the interpretation to the reader.
 2. **Defensible numbers.** Every figure traces to one function, one file, one SQL view ([data-pipeline.md §4](data-pipeline.md)), and the method is printed on the page. When the first version produced a flattering but wrong GMROI (75×, averaging stores and ignoring the DC stock behind them), the design caught it and replaced it with the network figure (~11×).
 3. **Time travel without a database.** Twelve month-end states are rebuilt deterministically and shipped as static files. Reviewing "last quarter as it was" costs nothing, can't be altered, and needs no access control beyond the website.
-4. **Production-grade foundations at $0.** Least-privilege database roles, a read-only API, data-quality gates that roll back bad loads, CI on every change, a generated data dictionary, ADRs, and a breach-response playbook ([security.md](security.md), [cost.md](cost.md)).
+4. **Production-grade foundations at $0.** Least-privilege database roles, a read-only API, data-quality gates that roll back bad loads, CI on every change, a generated data dictionary, ADRs, and a breach-response playbook (security.md, [cost.md](cost.md)).
 5. **One model, many front ends.** The same analytics layer feeds the web app and is designed to feed Power BI, so the logic is written once.
 
 ## 5. What the concept implies
@@ -75,7 +75,7 @@ A multi-site retailer's inventory decisions (what to reorder, where capital is t
 | **Small scale** | 60 SKUs and 8 sites; real retailers have 10k-1M SKU-locations | Architecture scales (set-based SQL, per-series models parallelise); untested at that size |
 | **Read-only** | Shows decisions but can't action them (raise the PO, approve the transfer) | Write paths exist in code for dev only; production would need authentication, approvals and audit |
 | **Monthly granularity for history** | Month-end replay can't show intra-month events | Fine for governance reviews; daily ops would use the live API |
-| **No authentication or row-level security** | Fine for public synthetic data; unacceptable for real data | Real deployment: SSO, RLS by region/store, audit log (designed for in [security.md](security.md)) |
+| **No authentication or row-level security** | Fine for public synthetic data; unacceptable for real data | Real deployment: SSO, RLS by region/store, audit log (designed for in security.md, internal) |
 | **Single currency, single business unit** | Real groups span currencies and banners | Currency dimension and FX table |
 
 ### Risks

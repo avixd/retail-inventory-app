@@ -2,7 +2,7 @@
 
 Status: **as built (code complete, pending first deploy)** · Date: 02/11/2026 · Scope: Phases 1 and 2
 
-> **As-built changes.** The build refined this design in five places, each recorded as a decision: the API serves a front-end-shaped dataset so existing views switch over without rewrites ([ADR-0001](adr/0001-dataset-endpoint-and-in-place-hydration.md)); CI tests on a Postgres container rather than Neon branches ([ADR-0002](adr/0002-ci-postgres-service-container.md)); forecasting models are implemented in numpy with SES added and Croston limited to intermittent series ([ADR-0003](adr/0003-forecasting-in-numpy.md)); roles are created with SQL because console roles inherit `neon_superuser` ([ADR-0004](adr/0004-least-privilege-roles-via-sql.md)); simulator plans live in `ops`, not `core` ([ADR-0005](adr/0005-simulator-plans-outside-core.md)). Also: the product hierarchy column is `product_class` (`class` is an SQL keyword), the supplier fill rate is measured as **line fill** (share of PO lines delivered complete on first receipt), and the scorecard and KPIs are computed in SQL views rather than Python jobs. The sections below are updated to match.
+> **As-built changes.** The build refined this design in five places, each recorded as a decision: the API serves a front-end-shaped dataset so existing views switch over without rewrites ([ADR-0001](adr/0001-dataset-endpoint-and-in-place-hydration.md)); CI tests on a Postgres container rather than Neon branches ([ADR-0002](adr/0002-ci-postgres-service-container.md)); forecasting models are implemented in numpy with SES added and Croston limited to intermittent series ([ADR-0003](adr/0003-forecasting-in-numpy.md)); roles are created with SQL because console roles inherit `neon_superuser` (ADR-0004); simulator plans live in `ops`, not `core` ([ADR-0005](adr/0005-simulator-plans-outside-core.md)). Also: the product hierarchy column is `product_class` (`class` is an SQL keyword), the supplier fill rate is measured as **line fill** (share of PO lines delivered complete on first receipt), and the scorecard and KPIs are computed in SQL views rather than Python jobs. The sections below are updated to match.
 
 How each component in the [high-level design](high-level-design.md) is built: repository layout, database objects, the analytics maths, the API contract, pipeline jobs, front-end integration, CI/CD and testing. Requirement IDs (FR-xx, NFR-xx) refer to the HLD.
 
@@ -118,30 +118,7 @@ API-facing views (`analytics.v_*`) wrap the latest successful run of each model 
 
 ### 3.4 Roles and grants
 
-Login roles are created with SQL by `python -m app.bootstrap_roles`, with passwords from GitHub secrets, never in the Neon console ([ADR-0004](adr/0004-least-privilege-roles-via-sql.md)). Migration 0003 grants privileges and refuses to run if either role inherits `neon_superuser`, `pg_read_all_data`/`pg_write_all_data` or any elevated attribute. As built, the pipeline refreshes materialised views through `analytics.refresh_facts()`, a `SECURITY DEFINER` function it may execute, rather than holding `MAINTAIN` (works on any Postgres version). The essentials:
-
-```sql
--- Public API: read-only, analytics views only, short queries
-ALTER ROLE app_reader SET default_transaction_read_only = on;
-ALTER ROLE app_reader SET statement_timeout = '5s';
-GRANT USAGE ON SCHEMA analytics TO app_reader;
-GRANT SELECT ON ALL TABLES IN SCHEMA analytics TO app_reader;
-ALTER DEFAULT PRIVILEGES IN SCHEMA analytics GRANT SELECT ON TABLES TO app_reader;
-REVOKE ALL ON SCHEMA core, ops FROM app_reader;
-
--- Nightly pipeline: insert data, update order statuses, refresh views
-GRANT USAGE ON SCHEMA core, analytics, ops TO etl_runner;
-GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA core TO etl_runner;
-GRANT UPDATE ON core.purchase_order, core.transfer_order, core.supplier_invoice TO etl_runner;
-GRANT SELECT, INSERT, DELETE ON ALL TABLES IN SCHEMA analytics TO etl_runner;
-GRANT EXECUTE ON FUNCTION analytics.refresh_facts() TO etl_runner;  -- SECURITY DEFINER refresh
-GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA ops TO etl_runner;
-
--- Ledger integrity: nobody edits history
-REVOKE UPDATE ON core.stock_movement FROM PUBLIC, etl_runner, app_writer;
-
--- app_writer exists in dev branches only; it is never created on the production branch
-```
+> Security controls and operating procedures for this part are documented internally.
 
 ### 3.5 Synthetic data generator (FR-03, FR-04)
 
@@ -263,8 +240,6 @@ Each sub-score is clamped to 0–100. Cohorts keep the existing thresholds: ≥ 
 | Lists | `{ "items": [...], "total": n, "limit": 50, "offset": 0, "asOf": "2026-11-02" }`; `limit` max 200 |
 | Errors | RFC 9457 `application/problem+json`; no stack traces or SQL in responses |
 | Caching | `Cache-Control: public, max-age=300, stale-while-revalidate=600`; `ETag` derived from the data as-of timestamp, so repeat requests get `304` |
-| CORS | Allow-list from `CORS_ORIGINS` (production: `https://avixd.github.io`; dev adds localhost) |
-| Rate limit | 60 requests per minute per client IP, read from the proxy's forwarded header; `429` with `Retry-After` |
 | Docs | OpenAPI JSON and Swagger UI at `/docs` (read-only, safe to expose, useful in interviews) |
 | Health | `/health` = process alive, **no database call** (so wake-up pings don't wake Neon); `/ready` = one `SELECT 1` |
 
@@ -301,20 +276,7 @@ Connects through Neon's pooled endpoint. Pool size 5, `pool_pre_ping` on, connec
 
 ### 5.4 Configuration
 
-| Variable | Where | Secret | Purpose |
-|---|---|---|---|
-| `APP_ENV` | API | no | `local`, `ci` or `prod` |
-| `DATABASE_URL` | Render, CI | **yes** | `app_reader` connection string |
-| `DATABASE_URL_WRITER` | local `.env` only | **yes** | `app_writer`, dev branches only |
-| `ADMIN_API_ENABLED` | API | no | Defaults to `false` |
-| `ADMIN_TOKEN_SHA256` | local `.env` only | **yes** | Hash of the admin bearer token |
-| `CORS_ORIGINS` | API | no | Comma-separated allow-list |
-| `RATE_LIMIT` | API | no | Default `60/minute` |
-| `DATABASE_URL_ETL`, `DATABASE_URL_MIGRATOR` | GitHub secrets | **yes** | Pipeline and migration roles |
-| `NEON_API_KEY`, `NEON_PROJECT_ID` | GitHub secrets | **yes** / no | Create and delete CI branches |
-| `RENDER_DEPLOY_HOOK_URL` | GitHub secret | **yes** | Anyone holding it can trigger a deploy |
-| `VITE_API_BASE_URL` | front-end build | no | Public by design; it's the API's address |
-| `VITE_READ_ONLY` | front-end build | no | `true` in production; disables action buttons |
+> Security controls and operating procedures for this part are documented internally.
 
 ## 6. Pipeline jobs
 
@@ -399,7 +361,6 @@ The nightly schedule runs in the private repo, so GitHub's 60-day inactivity shu
 | Unit (pipeline) | Classification boundaries, scorecard weights sum to 1.0, seasonal naive reproduces last year exactly, generator determinism (same seed → same checksum) | |
 | Unit (API) | Schema serialisation, parameter validation, error mapping | `limit=500` returns 422 |
 | Integration | Every endpoint returns 200 and validates against its schema on a seeded Neon branch | |
-| Security | `app_reader` `INSERT` is rejected by the database; `POST` to admin paths returns 404 when disabled; disallowed origin gets no CORS headers; burst traffic returns 429 | |
 | Contract | Snapshot files validate against the API's Pydantic models | |
 
 Target: 80% line coverage on pipeline business logic and API services.
@@ -415,7 +376,6 @@ Target: 80% line coverage on pipeline business logic and API services.
 | Render instance hours used up | Snapshot badge | Same |
 | Nightly job failed | Yesterday's snapshot | Check `ops.job_run` and the Actions log; fix; re-run with manual dispatch |
 | Scheduled workflow disabled after 60 quiet days | Snapshot stops advancing | Re-enable in the Actions tab |
-| Credential rotation | Nothing | Reset the role password in Neon, update the Render variable and GitHub secret, redeploy |
 
 ## 11. Open items (need input at provisioning)
 

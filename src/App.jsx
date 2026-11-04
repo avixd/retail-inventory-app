@@ -3,7 +3,7 @@
  *
  * Navigation is one piece of state (`active`): the Sidebar sets it, the VIEWS
  * map turns it into a component, and that component is rendered. No routing
- * library — a single state variable and a lookup is all ten self-contained
+ * library — a single state variable and a lookup is all fourteen self-contained
  * views need. Views may call onNavigate(id) to link to another view.
  */
 import { useState } from "react";
@@ -11,6 +11,10 @@ import Header from "./components/Header";
 import Sidebar, { NAV_ITEMS } from "./components/Sidebar";
 import ExecutiveSummary from "./views/ExecutiveSummary";
 import InventoryOverview from "./views/InventoryOverview";
+import DemandForecast from "./views/DemandForecast";
+import ReplenishmentPlan from "./views/ReplenishmentPlan";
+import InventoryHealth from "./views/InventoryHealth";
+import SitePerformance from "./views/SitePerformance";
 import ReorderAlerts from "./views/ReorderAlerts";
 import OffShelf from "./views/OffShelf";
 import StockMovements from "./views/StockMovements";
@@ -26,6 +30,10 @@ const VIEWS = {
   summary: ExecutiveSummary,
   overview: InventoryOverview,
   reorder: ReorderAlerts,
+  forecast: DemandForecast,
+  replenishment: ReplenishmentPlan,
+  health: InventoryHealth,
+  sites: SitePerformance,
   offshelf: OffShelf,
   movements: StockMovements,
   orders: Orders,

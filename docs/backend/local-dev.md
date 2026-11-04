@@ -61,6 +61,7 @@ Reload the dashboard after about a minute (the API caches the as-of date for 60 
 
 | Command | What it proves |
 |---|---|
-| `cd backend && uv run pytest` (with `DATABASE_URL` set) | 40 API tests: unit + integration against the seeded database |
-| `cd pipeline && uv run pytest -m "not integration"` | 29 generator and analytics tests |
+| `cd backend && uv run pytest` (with `DATABASE_URL` set) | 48 API tests: unit + integration against the seeded database |
+| `cd pipeline && uv run pytest -m "not integration"` | 30 generator and analytics tests (incl. warehouse bins within capacity) |
+| `npm run test:unit` in the front-end repo | 22 offline tests: summary and scorecard maths, and every published month-end (files complete, checksums match the manifest, selectors and KPIs finite, blocking data-quality checks passed) |
 | `npm run test:api` in the front-end repo | 21 contract tests: live data has every field the views use, every selector computes finite numbers, the API is read-only, security headers and CORS are correct |

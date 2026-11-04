@@ -79,3 +79,31 @@ test("delta is null when there is no prior month", () => {
   assert.equal(delta(5, null), null);
   assert.equal(delta(5, 3), 2);
 });
+
+test("data-derived target = best rolling 3-month average, respecting direction", async () => {
+  const { dataDerivedTarget, targetStatus } = await import("../src/data/summary.js");
+  const v = [10, 12, 14, 11, 9, 13];          // 3-month averages: 12, 12.33, 11.33, 11
+  assert.equal(dataDerivedTarget(v, "higher").toFixed(2), "12.33");
+  assert.equal(dataDerivedTarget(v, "lower"), 11);
+  assert.equal(dataDerivedTarget([1, 2], "higher"), null, "needs a full window");
+  assert.equal(targetStatus(12.5, 12, "higher"), "on");
+  assert.equal(targetStatus(11, 12, "higher"), "watch");   // within 10%
+  assert.equal(targetStatus(10, 12, "higher"), "off");
+  assert.equal(targetStatus(0.031, 0.03, "lower"), "watch");
+  assert.equal(targetStatus(0.04, 0.03, "lower"), "off");
+});
+
+test("KPI scorecard: GMROI = markup x turns exactly, targets from trailing months", async () => {
+  const { kpiScorecard } = await import("../src/data/summary.js");
+  const months = ["2026-08-01", "2026-09-01", "2026-10-01"];
+  const net = months.map((m, i) => ({ month: m, gmroi: 10 + i, turns: 7 + i * 0.5, daysOfSupply: 50 - i, stockoutRate: 0.03 }));
+  const sc = kpiScorecard(net, "2026-10-31");
+  const by = Object.fromEntries(sc.metrics.map((m) => [m.id, m]));
+  assert.equal(by.gmroi.value, 12);
+  assert.ok(sc.identityGap < 1e-9, "markup x turns reproduces GMROI");
+  assert.equal(by.gmroi.target, 11);                  // only one full 3-month window: (10+11+12)/3
+  assert.equal(by.gmroi.status, "on");
+  assert.equal(by.gmroi.tier, "north_star");
+  assert.equal(by.stockout_rate.tier, "guardrail");
+  assert.equal(kpiScorecard(net, "2025-01-31"), null, "no row for the month -> no scorecard");
+});

@@ -57,6 +57,11 @@ The system exists to answer the questions a retail inventory and procurement tea
 | FR-19 | "As of" selector replays every view at any of the last twelve month-ends, on desktop and mobile, without a database call | BR-01, BR-07 |
 | FR-20 | Network KPIs: GMROI and turns over store **and** DC inventory (per-site averages overstate GMROI ~7×) | BR-07, BR-08 |
 | FR-21 | Data dictionary generated from schema comments; CI fails if it drifts | NFR-06 |
+| FR-22 | Strategic KPI scorecard: GMROI north star decomposed as markup × turns, drivers and the stock-out guardrail, each against a data-derived target | BR-07, BR-08 |
+| FR-23 | Planning views: demand forecast (accuracy and bias vs baseline, forecast vs actual), replenishment plan (every position, worked safety-stock example), inventory health (ABC-XYZ policy matrix), site performance | BR-02, BR-06 to BR-08 |
+| FR-24 | Data trust: each month publishes the data-quality results of the load behind it | NFR-06 |
+| FR-25 | Provenance: every snapshot manifest carries the git commit and a SHA-256 per file, verified by tests | NFR-06 |
+| FR-26 | One metrics catalogue (`metrics/metrics.toml`) defines every KPI; documentation is generated and validated in CI | BR-01 to BR-09 |
 
 ## 4. Non-functional requirements
 
@@ -170,7 +175,7 @@ flowchart LR
     C["Owner moves DATA_CUTOFF<br/>(deliberate release)"] --> B["release-data.sh<br/>local database only"]
     B --> S["seed to first month-end,<br/>then simulate month by month"]
     S --> A["analyse as of each month-end<br/>forecast · replenishment · ABC-XYZ · KPIs"]
-    A --> Q{"8 data-quality<br/>checks pass?"}
+    A --> Q{"9 data-quality<br/>checks pass?"}
     Q -->|yes| E["export 12 month-end snapshots<br/>+ data dictionary"]
     E --> T["front-end tests on every month"]
     T --> R["owner reviews, commits,<br/>Pages deploys"]

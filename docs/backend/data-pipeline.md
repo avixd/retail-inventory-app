@@ -19,7 +19,7 @@ flowchart LR
         Models[("models: ABC-XYZ · forecasts<br/>replenishment · KPIs")]
         Views["API views v_* and dataset views v_ds_*"]
     end
-    DQ{{"4 · 8 data-quality checks<br/>(error = whole run rolled back)"}}
+    DQ{{"4 · 9 data-quality checks<br/>(error = whole run rolled back)"}}
     subgraph Pub["5 · Publish"]
         API["Read-only API<br/>/api/v1/*"]
         Snap["Month-end snapshots<br/>12 × public/snapshot/&lt;date&gt;/"]
@@ -48,7 +48,7 @@ Data is **frozen at 31 Oct 2026** ([ADR 0007](adr/0007-frozen-dataset-cut-off.md
 
 ## 2. Data-quality gates
 
-All eight run inside the load's transaction, after the analytics, so a failure leaves the previous good state untouched.
+All nine run inside the load's transaction, after the analytics, so a failure leaves the previous good state untouched.
 
 | Check | Severity | Guarantees |
 |---|---|---|
@@ -59,7 +59,8 @@ All eight run inside the load's transaction, after the analytics, so a failure l
 | `inventory_fact_reconciles` | error | The inventory fact's latest day equals the ledger's on-hand, row for row |
 | `sales_loaded_through_as_of` | error | Sales are loaded through exactly the simulated date |
 | `open_po_without_plan` | warn | Every open PO has a pending simulator event, so none is stuck forever |
-| `bin_over_capacity` | warn | No DC bin holds more than its capacity. **Currently fails: 110 of 192 bins at 31 Oct** (known simulator gap, see [business-review.md §7](business-review.md#7-critique)) |
+| `price_above_cost` | error | Every active product has a positive cost and sells above it (margin and GMROI depend on it) |
+| `bin_over_capacity` | warn | No DC bin holds more than its capacity. Slots are sized from the replenishment policy at peak demand (catalogue v2), so this is ~0; brief spikes when demand runs above expectation are warned, not blocked |
 
 ## 3. Models, briefly
 
@@ -83,9 +84,16 @@ Every figure on screen comes from one function over one file, which comes from o
 | GMROI, turns, stock-out rate | `monthKpis`, `kpiTrend` | `kpis-network.json` → `/api/v1/analytics/kpis/network` | `v_kpi_network_monthly` |
 | Supplier concentration | `supplierConcentration` | `spend-pareto.json`, `scorecard.json` | `v_spend_pareto`, `v_supplier_scorecard` |
 | Overdue payables | `payables` | `procurement-summary.json` → `/api/v1/procurement/summary` | `v_payables_by_terms` |
+| KPI scorecard and targets | `kpiScorecard`, `dataDerivedTarget` | `kpis-network.json` | `v_kpi_network_monthly` |
+| Forecast accuracy and bias | Demand Forecast view | `forecast-accuracy.json` → `/api/v1/forecast/accuracy` | `v_forecast_accuracy_series` |
+| Forecast vs actual chart | Demand Forecast view | `forecast-network.json` → `/api/v1/forecast/network` | `v_forecast_network_weekly` |
+| Replenishment plan | Replenishment Plan view | `replenishment.json` (all pages) | `v_replenishment` |
+| ABC-XYZ matrix | Inventory Health view | `abc-xyz.json` | `v_abc_xyz` |
+| Site KPIs | Site Performance view | `kpis.json` | `v_inventory_kpis` |
+| Data trust panel | Executive Summary | `data-quality.json` → `/api/v1/data-quality` | `v_data_quality` (latest **successful** load) |
 | Reorder queue, overview, P2P, suppliers | `inventory.js` selectors | `dataset.json` | `v_ds_*` |
 
-Column-level definitions: [data-dictionary.md](data-dictionary.md) (generated from the schema's own comments).
+Column-level definitions: [data-dictionary.md](data-dictionary.md) (generated from the schema's own comments). KPI definitions, the KPI tree and target rules: [metrics.md](metrics.md) (generated from `metrics/metrics.toml`).
 
 ## 5. Releasing new data
 
@@ -95,7 +103,11 @@ One command, run against a **local** database (it truncates and rebuilds it; it 
 scripts/release-data.sh ../retail-inventory-app
 ```
 
-It migrates, rebuilds twelve month-ends from the seed, replaces the front end's `public/snapshot/`, regenerates the data dictionary and runs the front end's snapshot tests. Nothing is committed: review the diff in both repos, then commit. Because the simulator is deterministic, the same code and seed always produce the same snapshots.
+It migrates, rebuilds twelve month-ends from the seed, replaces the front end's `public/snapshot/`, regenerates the data dictionary and runs the front end's snapshot tests. Nothing is committed: review the diff in both repos, then commit. Because the simulator is deterministic, the same code and seed always produce the same data.
+
+The same rebuild runs in CI without anyone's machine: **Actions → Data release → Run workflow** produces the snapshots as a downloadable artifact (`.github/workflows/data-release.yml`).
+
+**Provenance.** Each month's `manifest.json` records the export time, the data as-of date, the file contract version, the API version, the git commit that produced it (marked `-dirty` if uncommitted) and a **SHA-256 checksum per file**. The front end's tests recompute every checksum, so a corrupted or hand-edited file fails CI.
 
 To move the cut-off itself, change `DATA_CUTOFF` in `pipeline/retail_pipeline/generate/history.py` first.
 
@@ -107,3 +119,19 @@ To move the cut-off itself, change `DATA_CUTOFF` in `pipeline/retail_pipeline/ge
 | SQL and API | 42 on a real Postgres: every endpoint, read-only role, network KPIs ≤ store average | `backend/tests/`; CI runs the full seed → advance → API path |
 | Published data | Every month-end: files complete and dated, model hydrates, every selector and summary metric finite | front end `npm run test:unit` |
 | Contract | Live API returns every field the views use; read-only; security headers; CORS | front end `npm run test:api` |
+
+## 7. Best-practice alignment
+
+| Practice | How it's met |
+|---|---|
+| Idempotent, transactional loads | Each load is one transaction; re-running the advance job after the cut-off is a no-op; a failed blocking check rolls everything back |
+| Deterministic, reproducible data | Seeded simulator; the same code and seed rebuild identical history; tested |
+| Schema as code, versioned | Alembic migrations 0001-0008 run in CI on every push; catalogue version guards the simulator |
+| Data contracts | Front-end contract tests against the API; snapshot tests on every published month; contract version in each manifest |
+| Data quality as gates, not reports | 9 checks inside the load; blocking checks roll back; results published per month |
+| Single definition of each metric | `metrics/metrics.toml` → generated `metrics.md`; CI validates the KPI tree |
+| Self-documenting schema | Every table and view carries a `COMMENT`; the data dictionary is generated and checked in CI |
+| Least privilege along the pipeline | Generator, loader and reader run as different roles; the ledger is insert-only for the loader |
+| Model governance | Back-test before selection; accuracy and bias reported against a naive baseline, pooled exactly; known gaps stated (promotions) |
+| Provenance | Git SHA and per-file SHA-256 in every manifest; verified by tests |
+| No single person or machine required | Data release runs in CI as well as locally |

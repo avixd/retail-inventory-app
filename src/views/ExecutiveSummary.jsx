@@ -16,7 +16,7 @@ import { LineViz, PALETTE } from "../components/Charts";
 import { CAD } from "../data/inventory";
 import { useDataStatus } from "../data/useDataStatus";
 import { snapshotFile } from "../data/dataSource";
-import { loadMonth, summarise, kpiTrend, delta } from "../data/summary";
+import { loadMonth, summarise, kpiTrend, kpiScorecard, delta } from "../data/summary";
 
 const pct = (n, dp = 0) => (n == null ? "–" : `${(n * 100).toFixed(dp)}%`);
 const longDate = (iso) =>
@@ -48,6 +48,88 @@ function Finding({ icon: Icon, tone, title, value, deltaEl, text, link, onNaviga
         </button>
       )}
     </article>
+  );
+}
+
+const STATUS_LABEL = { on: "On target", watch: "Watch", off: "Off target" };
+const fmtKpi = (m, v) => (v == null ? "–" : m.unit === "%" ? `${(v * 100).toFixed(1)}%`
+  : m.unit === "days" ? `${Math.round(v)} days` : `${v.toFixed(m.id === "markup" ? 2 : 1)}×`);
+
+/** North star (GMROI) with its exact decomposition, then drivers and the guardrail, each vs target. */
+function Scorecard({ sc }) {
+  const by = Object.fromEntries(sc.metrics.map((m) => [m.id, m]));
+  const ns = by.gmroi;
+  const others = sc.metrics.filter((m) => m.tier !== "north_star");
+  return (
+    <section className="scorecard" aria-label="Strategic KPI scorecard">
+      <div className={`scorecard__north status--${ns.status ?? "none"}`}>
+        <div className="scorecard__eyebrow">North star · return on inventory</div>
+        <div className="scorecard__value">{fmtKpi(ns, ns.value)} <span>GMROI</span></div>
+        <div className="scorecard__identity">
+          = {fmtKpi(by.markup, by.markup.value)} markup on cost × {fmtKpi(by.turns, by.turns.value)} turns
+        </div>
+        <div className="scorecard__target">
+          Target {fmtKpi(ns, ns.target)} · <span className={`status-pill status-pill--${ns.status}`}>{STATUS_LABEL[ns.status] ?? "No target"}</span>
+        </div>
+      </div>
+      <div className="scorecard__drivers">
+        {others.map((m) => (
+          <div key={m.id} className={`scorecard__kpi status--${m.status ?? "none"}`}>
+            <div className="scorecard__tier">{m.tier === "guardrail" ? "Guardrail" : "Driver"}</div>
+            <div className="scorecard__name">{m.name}</div>
+            <div className="scorecard__kpival">{fmtKpi(m, m.value)}</div>
+            <div className="scorecard__kpitarget">
+              target {fmtKpi(m, m.target)} · <span className={`status-pill status-pill--${m.status}`}>{STATUS_LABEL[m.status] ?? "–"}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="scorecard__note">
+        Targets are this business's own best rolling 3-month average over the last 12 month-ends: performance it has
+        already sustained. Within 10% of target is "watch". GMROI = markup on cost × turns exactly, so it rises by earning
+        more per unit or holding less stock for the same sales; the stock-out rate guards against buying GMROI with empty shelves.
+      </p>
+    </section>
+  );
+}
+
+const CHECK_LABEL = {
+  negative_on_hand: "No site holds negative stock",
+  negative_bin_stock: "No DC bin holds negative stock",
+  missing_sales_rows: "A sales row for every store, SKU and day",
+  receipts_exceed_ordered: "No PO line received beyond what was ordered",
+  inventory_fact_reconciles: "Inventory fact reconciles to the stock ledger",
+  sales_loaded_through_as_of: "Sales loaded through the as-of date",
+  price_above_cost: "Every product sells above cost",
+  open_po_without_plan: "Every open PO is progressing",
+  bin_over_capacity: "No DC bin over capacity",
+};
+
+/** Results of the data-quality gates for the load behind this month's numbers. */
+function DataTrust({ checks }) {
+  const passed = checks.filter((c) => c.passed).length;
+  const warns = checks.filter((c) => !c.passed && c.severity === "warn");
+  return (
+    <details className="method-box data-trust">
+      <summary>
+        Data quality: <b>{passed} of {checks.length} checks passed</b>
+        {warns.length > 0 && <> · {warns.length} warning{warns.length > 1 ? "s" : ""}</>} for the load behind this month
+      </summary>
+      <table className="table">
+        <thead><tr><th>Check</th><th>Severity</th><th className="num-cell">Exceptions</th><th>Result</th></tr></thead>
+        <tbody>
+          {checks.map((c) => (
+            <tr key={c.checkName}>
+              <td>{CHECK_LABEL[c.checkName] ?? c.checkName}</td>
+              <td>{c.severity === "error" ? "Blocks the load" : "Warning"}</td>
+              <td className="num-cell">{c.observed == null ? "–" : Number(c.observed).toLocaleString("en-CA")}</td>
+              <td><span className={`status-pill status-pill--${c.passed ? "on" : c.severity === "warn" ? "watch" : "off"}`}>{c.passed ? "Passed" : "Flagged"}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="muted-note" style={{ margin: "8px 0 0" }}>A failed blocking check rolls the whole load back, so these numbers only exist because every blocking check passed.</p>
+    </details>
   );
 }
 
@@ -117,6 +199,8 @@ export default function ExecutiveSummary({ viewLabel, onNavigate }) {
         cur: cur.dataset ? summarise(cur, month) : null,
         prev: prev?.dataset ? summarise(prev, prevMonth) : null,
         trend: kpiTrend(cur.networkKpis),
+        scorecard: kpiScorecard(cur.networkKpis, month),
+        quality: Array.isArray(cur.dataQuality) ? cur.dataQuality : null,
       });
     });
     return () => { cancelled = true; };
@@ -141,6 +225,9 @@ export default function ExecutiveSummary({ viewLabel, onNavigate }) {
 
       {ready && (
         <>
+          {state.scorecard && <Scorecard sc={state.scorecard} />}
+
+          <h2 className="section-title">What changed, and where to act</h2>
           <section className="findings" aria-label="Headline findings">
             {buildFindings(state.cur, state.prev).map((f) => (
               <Finding key={f.title} {...f} onNavigate={onNavigate} />
@@ -164,6 +251,8 @@ export default function ExecutiveSummary({ viewLabel, onNavigate }) {
               ]}
             />
           </div>
+
+          {state.quality && <DataTrust checks={state.quality} />}
 
           <details className="method-box">
             <summary><Info size={14} style={{ verticalAlign: "-2px" }} /> How these figures are calculated</summary>

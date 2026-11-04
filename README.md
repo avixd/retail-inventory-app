@@ -83,7 +83,7 @@ The dashboard loads the committed snapshot first, then switches to the live API 
 | Hosting | GitHub Pages via GitHub Actions | Free, static, auto-deployed on push |
 | Backend (private) | Python 3.12, FastAPI, Postgres 16, numpy/pandas | Read-only API; forecasting and replenishment engines |
 | Backend hosting | Render (API) + Neon (Postgres), free tiers | $0 with no payment method, so no bill is possible ([cost](docs/backend/cost.md)) |
-| Testing | pytest, Node test runner | 42 API and 29 pipeline tests; front end: summary-maths unit tests, a check of every published month, and API contract tests |
+| Testing | pytest, Node test runner | 48 API and 30 pipeline tests; front end: summary-maths unit tests, a check of every published month, and API contract tests |
 
 ## Documentation
 

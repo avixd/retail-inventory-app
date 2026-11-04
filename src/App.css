@@ -1144,3 +1144,62 @@
 .form-fieldset:disabled textarea,
 .form-fieldset:disabled .btn { cursor: not-allowed; opacity: 0.65; }
 .btn:disabled, .cell-input:disabled, select:disabled { cursor: not-allowed; }
+
+/* ---------- Phase 2: planning views ---------- */
+.formula-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 24px; padding: 4px 22px 20px;
+}
+.formula-grid > div {
+  display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px;
+  background: var(--bg); border-radius: var(--radius-sm); font-size: 13px;
+}
+.formula-grid span { color: var(--ink-500); }
+.formula-grid b { color: var(--ink-900); font-family: var(--font-num); white-space: nowrap; }
+
+.abc-matrix {
+  display: grid; grid-template-columns: 44px repeat(3, 1fr); gap: 10px; padding: 4px 22px 22px;
+}
+.abc-matrix__colhead { font-size: 12px; font-weight: 700; color: var(--ink-500); text-transform: uppercase; letter-spacing: .04em; }
+.abc-matrix__rowhead { display: grid; place-items: center; font-size: 20px; font-weight: 800; color: var(--ink-700); }
+.abc-cell { border-radius: var(--radius); padding: 12px 14px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+.abc-cell--A { background: #e3f0f7; } .abc-cell--B { background: #eef5f9; } .abc-cell--C { background: #f6f9fb; }
+.abc-cell--empty { opacity: .55; }
+.abc-cell__seg { font-size: 12px; font-weight: 800; color: var(--teal-700); }
+.abc-cell__stats { display: flex; flex-direction: column; font-size: 13px; color: var(--ink-700); }
+.abc-cell__stats b { font-size: 16px; color: var(--ink-900); }
+.abc-cell__policy { margin: 0; font-size: 12px; line-height: 1.45; color: var(--ink-500); }
+
+.heat-table td { transition: background .2s; }
+.heat-table__now { outline: 2px solid var(--teal-600); outline-offset: -2px; font-weight: 700; }
+.table__total td { border-top: 2px solid var(--border-strong); }
+
+@media (max-width: 900px) {
+  .formula-grid { grid-template-columns: 1fr; }
+  .abc-matrix { grid-template-columns: 32px repeat(3, minmax(120px, 1fr)); overflow-x: auto; }
+}
+
+/* ---------- Strategic KPI scorecard (Executive Summary) ---------- */
+.section-title { margin: 6px 0 12px; font-size: 15px; font-weight: 800; color: var(--ink-700); }
+.scorecard { display: grid; grid-template-columns: minmax(280px, 1fr) 2fr; gap: 14px; margin-bottom: 22px; }
+.scorecard__north, .scorecard__kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  border-left: 5px solid var(--status, var(--ink-300));
+}
+.scorecard__north { padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+.scorecard__eyebrow, .scorecard__tier { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-500); }
+.scorecard__value { font-family: var(--font-num); font-size: 40px; font-weight: 800; color: var(--ink-900); line-height: 1.1; }
+.scorecard__value span { font-size: 15px; font-weight: 700; color: var(--ink-500); margin-left: 4px; }
+.scorecard__identity { font-size: 14px; color: var(--ink-700); }
+.scorecard__target, .scorecard__kpitarget { font-size: 12.5px; color: var(--ink-500); }
+.scorecard__drivers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.scorecard__kpi { padding: 14px 14px; display: flex; flex-direction: column; gap: 4px; }
+.scorecard__name { font-size: 13px; font-weight: 700; color: var(--ink-700); }
+.scorecard__kpival { font-family: var(--font-num); font-size: 24px; font-weight: 800; color: var(--ink-900); }
+.scorecard__note { grid-column: 1 / -1; margin: 0; font-size: 12.5px; color: var(--ink-500); line-height: 1.5; }
+.status--on { --status: #2e9e6b; } .status--watch { --status: #f4a63b; } .status--off { --status: #d0563f; }
+.status-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.status-pill--on { background: #d9f2e5; color: #1c7a4f; }
+.status-pill--watch { background: #fdecd3; color: #8a5300; }
+.status-pill--off { background: #fbe3de; color: #b23a25; }
+@media (max-width: 1100px) { .scorecard { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .scorecard__drivers { grid-template-columns: 1fr 1fr; } }

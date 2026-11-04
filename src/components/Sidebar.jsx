@@ -1,10 +1,14 @@
 /**
- * Primary navigation. NAV_ITEMS defines the ten views grouped into four
+ * Primary navigation. NAV_ITEMS defines the fourteen views grouped into five
  * sections (Overview, Inventory, Procurement, Master Data); the Sidebar
  * renders them and reports the selected id back to App via onSelect.
  */
 import {
   Presentation,
+  LineChart,
+  Calculator,
+  Grid3x3,
+  Store,
   LayoutDashboard,
   TriangleAlert,
   Warehouse,
@@ -21,6 +25,11 @@ export const NAV_ITEMS = [
   { id: "summary", label: "Executive Summary", icon: Presentation, group: "Overview" },
   { id: "overview", label: "Inventory Overview", icon: LayoutDashboard, group: "Overview" },
   { id: "reorder", label: "Reorder / Low-Stock", icon: TriangleAlert, group: "Overview" },
+
+  { id: "forecast", label: "Demand Forecast", icon: LineChart, group: "Planning" },
+  { id: "replenishment", label: "Replenishment Plan", icon: Calculator, group: "Planning" },
+  { id: "health", label: "Inventory Health", icon: Grid3x3, group: "Planning" },
+  { id: "sites", label: "Site Performance", icon: Store, group: "Planning" },
 
   { id: "offshelf", label: "Off-Shelf · Warehouse", icon: Warehouse, group: "Inventory" },
   { id: "movements", label: "Stock Movements", icon: ScrollText, group: "Inventory" },

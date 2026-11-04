@@ -241,3 +241,27 @@ export function ScatterViz({ points, xName = "Spend", yName = "Score", yDomain =
     </ResponsiveContainer>
   );
 }
+
+/* ---------- Forecast: actual history, forecast line, shaded 80% interval ----------
+   Rows carry { week, actual?, forecast?, band?: [lower, upper] }; Recharts draws an
+   Area whose value is a [low, high] pair as a band between the two. */
+export function ForecastViz({ data, height = 280 }) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <ComposedChart data={data} margin={{ top: 8, right: 8, left: -14, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.grid} vertical={false} />
+        <XAxis dataKey="week" {...axisProps} minTickGap={18} />
+        <YAxis {...valueAxis} width={44} />
+        <Tooltip
+          {...tooltipStyle}
+          formatter={(v, name) => (Array.isArray(v) ? [`${Math.round(v[0])} – ${Math.round(v[1])}`, name] : [Math.round(v), name])}
+        />
+        <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: 6 }} />
+        <Area type="monotone" dataKey="band" name="80% interval" stroke="none" fill={PALETTE.accent} fillOpacity={0.22} />
+        <Line type="monotone" dataKey="actual" name="Actual demand" stroke={PALETTE.teal} strokeWidth={2.2} dot={false} />
+        <Line type="monotone" dataKey="forecast" name="Forecast" stroke={PALETTE.accent} strokeWidth={2.4}
+              strokeDasharray="6 4" dot={{ r: 2.5 }} />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}

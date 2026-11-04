@@ -9,13 +9,15 @@ A full-stack retail inventory platform: a React dashboard on GitHub Pages, a rea
 | # | Document | For |
 |---|---|---|
 | 1 | [Business review: problem, USP, applications, honest critique](backend/business-review.md) | Everyone, especially business readers (5 minutes) |
-| 2 | [Overview: how it works, good practice, pros and cons](backend/README.md) | Everyone (5 minutes) |
-| 3 | [Security: threat model, controls, breach response](backend/security.md) | Technical reviewers |
-| 4 | [Cost: why it's $0 and stays that way](backend/cost.md) | Technical reviewers |
-| 5 | [Data pipeline, end to end](backend/data-pipeline.md) · [Data dictionary](backend/data-dictionary.md) | How every number is produced, checked and published; every table and column |
-| 6 | [Option analysis](backend/option-analysis.md) → [High-level design](backend/high-level-design.md) → [Low-level design](backend/low-level-design.md) | Deep dive: requirements, schema, API, maths |
-| 7 | [Architecture decisions](backend/adr/README.md) | Why the code looks the way it does |
-| 8 | [Front-end architecture](architecture.md) · [View-by-view walkthrough](technical-walkthrough.md) · [Front-end decisions](decisions.md) | The dashboard itself |
-| 9 | [Setup guide](backend/setup-guide.md) · [Runbook](backend/runbook.md) · [Local development](backend/local-dev.md) | Operating it |
+| 2 | [Panel review (CTO · CIO · COO): rating, good/bad/ugly, resilience, compliance, holes and next steps](backend/panel-review.md) | Leadership and technical reviewers |
+| 3 | [KPI tree and metric definitions (north star: GMROI)](backend/metrics.md) | Anyone reading the numbers |
+| 4 | [Overview: how it works, good practice, pros and cons](backend/README.md) | Everyone (5 minutes) |
+| 5 | [Security: threat model, controls, breach response](backend/security.md) | Technical reviewers |
+| 6 | [Cost: why it's $0 and stays that way](backend/cost.md) | Technical reviewers |
+| 7 | [Data pipeline, end to end](backend/data-pipeline.md) · [Data dictionary](backend/data-dictionary.md) | How every number is produced, checked and published; every table and column |
+| 8 | [Option analysis](backend/option-analysis.md) → [High-level design](backend/high-level-design.md) → [Low-level design](backend/low-level-design.md) | Deep dive: requirements, schema, API, maths |
+| 9 | [Architecture decisions](backend/adr/README.md) | Why the code looks the way it does |
+| 10 | [Front-end architecture](architecture.md) · [View-by-view walkthrough](technical-walkthrough.md) · [Front-end decisions](decisions.md) | The dashboard itself |
+| 11 | [Setup guide](backend/setup-guide.md) · [Runbook](backend/runbook.md) · [Local development](backend/local-dev.md) | Operating it |
 
 The backend **code** is in a private repository (available on request). Its documentation is published here because it contains no code and no secrets: the system's security does not rely on its design being hidden.

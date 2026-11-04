@@ -335,6 +335,19 @@ Data-quality checks: no negative end-of-day on hand; every active store has sale
 | Supplier concentration | Top-3 share of YTD ordered spend; spend with Watchlist suppliers (score < 58) | `spend-pareto.json`, `scorecard.json` |
 | Overdue payables | Σ overdue amount of open supplier invoices | `procurement-summary.json` |
 
+**Strategic KPI scorecard** (`kpiScorecard`): for the as-of month, GMROI (north star), turns, markup on cost (= GMROI ÷ turns), days of supply and the store stock-out rate (guardrail). `dataDerivedTarget` takes the best rolling 3-month average over the trailing 12 month-ends in the direction that is good for that KPI; `targetStatus` returns on / watch (within 10%) / off. Definitions: `metrics/metrics.toml`.
+
+**Planning views (Phase 2)**, all reading the selected month's files through `useMonthFiles()`, so they follow the "As of" selector:
+
+| View | Files | What it computes |
+|---|---|---|
+| Demand Forecast | `forecast-accuracy.json`, `forecast-network.json` | Pooled WAPE and bias of chosen models vs seasonal naive; model mix; hardest SKUs; 26 weeks actual + 8-week forecast with an 80% band per SKU |
+| Replenishment Plan | `replenishment.json` (all 480 positions) | Filters by site and status; recomputes z, safety stock and reorder point for the most urgent position in the browser and shows they match the engine |
+| Inventory Health | `abc-xyz.json` + month dataset | 3×3 ABC-XYZ matrix with SKUs, revenue share, inventory held and stocking policy per cell; inventory share vs revenue share by class |
+| Site Performance | `kpis.json`, `kpis-network.json` | Turns, days of supply, GMROI and stock-out rate by site for the month, network row, 12-month stock-out heatmap |
+
+**Data trust panel**: `data-quality.json` (latest successful load's checks) rendered on the Executive Summary.
+
 **Read-only build** (`VITE_READ_ONLY=true`, set by the Pages deploy): every form is wrapped in a disabled `<fieldset>`, action buttons are disabled with a "View only" label, and handlers return early as a second guard.
 
 **Tests:** `npm run test:unit` (summary maths with hand-worked fixtures; every published month hydrates, every selector and summary metric is finite, dates match folders) and `npm run test:api` (contract against a running API).

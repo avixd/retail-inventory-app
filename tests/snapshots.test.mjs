@@ -11,8 +11,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import * as inv from "../src/data/inventory.js";
-import { summarise, kpiTrend } from "../src/data/summary.js";
+import { summarise, kpiTrend, kpiScorecard } from "../src/data/summary.js";
 
 const DIR = new URL("../public/snapshot/", import.meta.url);
 const read = (path) => JSON.parse(readFileSync(new URL(path, DIR), "utf8"));
@@ -41,8 +42,17 @@ test("index lists twelve month-ends, newest first, default = newest", () => {
 
 for (const month of index.months) {
   test(`${month}: complete, dated correctly, and computes cleanly`, () => {
-    for (const name of [...Object.values(FILES), "kpis.json", "meta.json", "manifest.json"]) {
+    const extra = ["kpis.json", "meta.json", "manifest.json", "forecast-network.json", "forecast-accuracy.json",
+      "data-quality.json", "abc-xyz.json"];
+    for (const name of [...Object.values(FILES), ...extra]) {
       assert.ok(existsSync(new URL(`${month}/${name}`, DIR)), `${month}/${name} exists`);
+    }
+    // Provenance: every published file matches the checksum recorded when it was exported.
+    const manifest = read(`${month}/manifest.json`);
+    assert.equal(manifest.asOf, month);
+    for (const [name, info] of Object.entries(manifest.files)) {
+      const sha = createHash("sha256").update(readFileSync(new URL(`${month}/${name}`, DIR))).digest("hex");
+      assert.equal(sha, info.sha256, `${month}/${name} checksum`);
     }
     const files = Object.fromEntries(Object.entries(FILES).map(([k, f]) => [k, read(`${month}/${f}`)]));
     assert.equal(files.dataset.meta.asOf, month, "dataset as-of");
@@ -65,6 +75,12 @@ for (const month of index.months) {
     assert.ok(summary.investment.value > 0 && summary.kpis.gmroi > 0 && summary.payables.outstanding > 0);
     assert.equal(kpiTrend(files.networkKpis).length, 12, "twelve months of KPI trend");
     assert.ok(summary.kpis.gmroi < 40, "network GMROI is a network figure, not a store average");
+    const sc = kpiScorecard(files.networkKpis, month);
+    assert.ok(sc && sc.identityGap < 0.05, `GMROI = markup x turns within rounding (gap ${sc?.identityGap})`);
+    assert.ok(sc.metrics.every((m) => m.value != null && m.status != null), "every scorecard KPI has a value and status");
+    const quality = read(`${month}/data-quality.json`);
+    assert.ok(quality.length >= 9 && quality.filter((c) => c.severity === "error").every((c) => c.passed),
+      "data-quality published and every blocking check passed");
   });
 }
 

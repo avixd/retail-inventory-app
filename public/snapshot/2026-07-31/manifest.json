@@ -1,16 +1,61 @@
 {
-  "generatedAt": "2026-11-04T02:58:53+00:00",
+  "generatedAt": "2026-11-04T12:09:19+00:00",
   "asOf": "2026-07-31",
+  "contractVersion": 2,
+  "apiVersion": "1.0.0",
+  "gitSha": "5bf16f8",
   "files": {
-    "dataset.json": 120731,
-    "meta.json": 179,
-    "scorecard.json": 3454,
-    "spend-pareto.json": 1303,
-    "procurement-summary.json": 591,
-    "replenishment.json": 63079,
-    "abc-xyz.json": 11170,
-    "kpis.json": 12701,
-    "kpis-network.json": 1747,
-    "forecast.json": 27878
+    "dataset.json": {
+      "bytes": 120435,
+      "sha256": "d6880ae503212e60ae49106de2a3dde4295503caa8e3a1fb56a2f8ebe60b1b28"
+    },
+    "meta.json": {
+      "bytes": 183,
+      "sha256": "d2c271ffb2536ca92f8069003d1e8b0c54e1682505a284689fd019781ea39cbe"
+    },
+    "scorecard.json": {
+      "bytes": 3454,
+      "sha256": "1b2960564078e901dd19b37a4dc08d303dd2025b6990ebeab165d67da48f5790"
+    },
+    "spend-pareto.json": {
+      "bytes": 1303,
+      "sha256": "209b7c047269a87331f6232934e8510ec2b88e6712894e832539061c4eb8a3bd"
+    },
+    "procurement-summary.json": {
+      "bytes": 591,
+      "sha256": "60b7b5a3177159048f419e44f8153abc7bd035893847d22a6752c8777d8ae1bc"
+    },
+    "replenishment.json": {
+      "bytes": 149880,
+      "sha256": "feba38f67123af4822e4f83bb5d29c10f6ae2ffac9b139d653b4351d9b455a0f"
+    },
+    "abc-xyz.json": {
+      "bytes": 11172,
+      "sha256": "e99b05df28ef0cb44c84695e87d0f1ac97a4b27fee10fec3ab4ef118cc2db4e6"
+    },
+    "kpis.json": {
+      "bytes": 12701,
+      "sha256": "63f0f5cc59813b9fd3527fe276c109edc7d70d2f7bd3a59bfd79015d74bf347a"
+    },
+    "kpis-network.json": {
+      "bytes": 1747,
+      "sha256": "17bd640e18f7065311d793d1e687ceb7972aed9c19aba9ca0100b281ccb5ba81"
+    },
+    "forecast.json": {
+      "bytes": 27878,
+      "sha256": "8976a2e8ea4c4e6152ab71b461d43f89c00135a99505cef5400a2c2ae64cd79a"
+    },
+    "forecast-network.json": {
+      "bytes": 212640,
+      "sha256": "33cb85b17934394b13f2981322c9930cd575e61222c53ca4921869eaa7e013c0"
+    },
+    "forecast-accuracy.json": {
+      "bytes": 8049,
+      "sha256": "48dc62a89df38f6803d9494b86d3647ff54cf90c74a127c9ff9d809eb35c2442"
+    },
+    "data-quality.json": {
+      "bytes": 1944,
+      "sha256": "e594fcd1b562e0620f3b534b666bbea72bb1640e5c55fa95192661e18c9c256d"
+    }
   }
 }

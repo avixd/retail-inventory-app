@@ -7,10 +7,11 @@
  * inventory.js. Definitions are spelled out next to each metric so the page can
  * show exactly how each figure was calculated.
  */
-export const SUMMARY_FILES = ["dataset", "replenishment", "networkKpis", "scorecard", "spendPareto", "procurement"];
+export const SUMMARY_FILES = ["dataset", "replenishment", "networkKpis", "scorecard", "spendPareto", "procurement", "dataQuality"];
 const FILE_NAMES = {
   dataset: "dataset.json", replenishment: "replenishment.json", networkKpis: "kpis-network.json",
   scorecard: "scorecard.json", spendPareto: "spend-pareto.json", procurement: "procurement-summary.json",
+  dataQuality: "data-quality.json",
 };
 
 /** Fetch every file the summary needs for one month-end with `getFile(month, name)`. Missing files are null. */
@@ -114,3 +115,51 @@ export function summarise(files, asOf) {
 
 /** Change between months, or null when there is no prior month to compare with. */
 export const delta = (cur, prev) => (prev == null || cur == null ? null : cur - prev);
+
+/* ---------- Strategic KPI scorecard (north star: GMROI) ----------
+   Definitions live in the backend's metrics catalogue (metrics/metrics.toml).
+   Targets are data-derived: the best rolling 3-month average over the trailing
+   12 month-ends, i.e. performance this business has already sustained. */
+
+export const TARGET_WINDOW_MONTHS = 3;
+export const WATCH_BAND = 0.1; // within 10% of target = "watch"
+
+/** Best rolling `window`-month average of a series (oldest first). Null if too short. */
+export function dataDerivedTarget(values, direction, window = TARGET_WINDOW_MONTHS) {
+  const v = values.filter((x) => x != null);
+  if (v.length < window) return null;
+  const avgs = [];
+  for (let i = 0; i + window <= v.length; i++) avgs.push(v.slice(i, i + window).reduce((s, x) => s + x, 0) / window);
+  return direction === "lower" ? Math.min(...avgs) : Math.max(...avgs);
+}
+
+/** "on" at or better than target, "watch" within WATCH_BAND of it, otherwise "off". */
+export function targetStatus(value, target, direction) {
+  if (value == null || target == null) return null;
+  if (direction === "lower") return value <= target ? "on" : value <= target * (1 + WATCH_BAND) ? "watch" : "off";
+  return value >= target ? "on" : value >= target * (1 - WATCH_BAND) ? "watch" : "off";
+}
+
+const SCORECARD = [
+  { id: "gmroi", name: "GMROI", tier: "north_star", direction: "higher", unit: "×", get: (k) => k.gmroi },
+  { id: "turns", name: "Inventory turns", tier: "driver", direction: "higher", unit: "×", get: (k) => k.turns },
+  { id: "markup", name: "Markup on cost", tier: "driver", direction: "higher", unit: "×",
+    get: (k) => (k.gmroi != null && k.turns ? k.gmroi / k.turns : null) },
+  { id: "days_of_supply", name: "Days of supply", tier: "driver", direction: "lower", unit: "days", get: (k) => k.daysOfSupply },
+  { id: "stockout_rate", name: "Store stock-out rate", tier: "guardrail", direction: "lower", unit: "%", get: (k) => k.stockoutRate },
+];
+
+/** Scorecard for the as-of month from the network KPI file (12 trailing months). */
+export function kpiScorecard(networkKpis, asOf) {
+  const rows = [...items(networkKpis)].sort((a, b) => a.month.localeCompare(b.month));
+  const current = rows.find((k) => k.month === monthKey(asOf));
+  if (!current) return null;
+  const metrics = SCORECARD.map((m) => {
+    const value = m.get(current);
+    const target = dataDerivedTarget(rows.map(m.get), m.direction);
+    return { ...m, get: undefined, value, target, status: targetStatus(value, target, m.direction) };
+  });
+  const by = Object.fromEntries(metrics.map((m) => [m.id, m]));
+  // GMROI = markup on cost x turns exactly; reported so the identity is visible and testable.
+  return { metrics, identityGap: by.gmroi.value != null ? Math.abs(by.markup.value * by.turns.value - by.gmroi.value) : null };
+}

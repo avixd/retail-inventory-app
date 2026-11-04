@@ -20,12 +20,14 @@ A multi-site retailer's inventory decisions (what to reorder, where capital is t
 | Capability | Business question answered |
 |---|---|
 | **Executive Summary** (landing view) | Inventory investment, sales at risk, stock-out rate, network GMROI, supplier concentration, overdue payables: each with its change since last month-end, a takeaway, and a link to the detail |
+| **Strategic KPI scorecard** | Is the return on inventory improving, and why? GMROI (north star) = markup on cost × turns, plus days of supply and the stock-out guardrail, each against the business's own best sustained performance |
+| **Planning views** | How good are the forecasts (accuracy and bias vs a naive baseline)? What should be reordered and why (worked safety-stock maths)? Is capital held where the revenue is (ABC-XYZ)? Which sites under-perform? |
 | **Look back in time** | How did we stand at any of the last twelve month-ends? What moved? |
 | Reorder / low-stock | Which SKUs are below their statistical reorder point, and what to buy |
 | Off-shelf / warehouse | How much capital sits in DC reserve; bin-level fill |
 | Procure-to-pay | Where POs are stuck; cycle time; payables by terms |
 | Supplier performance | Weighted, transaction-based scorecard; cohorts; spend Pareto |
-| Platform (behind the screen) | Ledger, star schema, forecasts with back-tested accuracy, replenishment policy, 8 data-quality gates, data dictionary, read-only API |
+| Platform (behind the screen) | Ledger, star schema, forecasts with back-tested accuracy, replenishment policy, 9 data-quality gates, data dictionary, read-only API |
 
 ## 4. Unique selling points
 

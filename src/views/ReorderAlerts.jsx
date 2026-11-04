@@ -6,8 +6,9 @@
 import { useState } from "react";
 import { TriangleAlert, PackageX, ShoppingCart, DollarSign, CheckCircle2, X } from "lucide-react";
 import ViewHead from "../components/ViewHead";
-import { ChartCard, BarViz, PALETTE } from "../components/Charts";
+import { BarViz, PALETTE } from "../components/Charts";
 import { lowStock, supplierName, CAD } from "../data/inventory";
+import { READ_ONLY, VIEW_ONLY_TIP } from "../data/dataSource";
 
 const LEVEL_PILL = {
   "Out of stock": "pill--danger",
@@ -37,6 +38,7 @@ export default function ReorderAlerts({ viewLabel }) {
   }));
 
   const createPO = (l) => {
+    if (READ_ONLY) return;
     setToast(`Draft PO created for ${l.suggested} × ${l.name} from ${supplierName(l.supplierId)} (demo).`);
   };
 
@@ -107,7 +109,8 @@ export default function ReorderAlerts({ viewLabel }) {
                 <td>{supplierName(l.supplierId)}</td>
                 <td><span className={`pill ${LEVEL_PILL[l.level] ?? ""}`}>{l.level}</span></td>
                 <td>
-                  <button className="btn btn--sm" onClick={() => createPO(l)}>
+                  <button className="btn btn--sm" onClick={() => createPO(l)} disabled={READ_ONLY}
+                          title={READ_ONLY ? VIEW_ONLY_TIP : undefined}>
                     <ShoppingCart size={13} /> Create PO
                   </button>
                 </td>

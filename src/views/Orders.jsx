@@ -113,10 +113,12 @@ function PlacePO() {
       <div className="panel">
       <div className="panel__head">
         <span className="panel__title">New purchase order</span>
-        <span className="pill pill--accent">Demo form</span>
+        <span className={`pill ${READ_ONLY ? "pill--muted" : "pill--accent"}`} title={READ_ONLY ? VIEW_ONLY_TIP : undefined}>{READ_ONLY ? "View only" : "Demo form"}</span>
       </div>
       <div className="panel__body">
         <form onSubmit={submit}>
+          {/* Public site is view-only: every control in the form is disabled, not just Submit. */}
+          <fieldset className="form-fieldset" disabled={READ_ONLY}>
           <div className="grid-2">
             <div className="field">
               <label>Supplier</label>
@@ -195,6 +197,7 @@ function PlacePO() {
               {units} units · <strong>{CAD(total)}</strong> total — demo only, nothing is sent.
             </span>
           </div>
+          </fieldset>
         </form>
       </div>
 

@@ -271,6 +271,7 @@ Each sub-score is clamped to 0–100. Cohorts keep the existing thresholds: ≥ 
 | `GET /api/v1/forecast` | `sku`, `location` | `v_forecast` | Forecast & Replenishment (Phase 2) |
 | `GET /api/v1/analytics/abc-xyz` | | `v_abc_xyz` | Forecast & Replenishment (Phase 2) |
 | `GET /api/v1/analytics/kpis` | `location`, `months` | `v_inventory_kpis` | Overview KPIs (Phase 2) |
+| `GET /api/v1/analytics/kpis/network` | none | `v_kpi_network_monthly` | Executive Summary: network GMROI, turns, days of supply (store margin and COGS over store + DC inventory) and store stock-out rate. Per-site averages overstate GMROI because stores hold ~10% of stock (migration 0005) |
 
 Admin endpoints (dev only, FR-09): `POST /api/v1/admin/purchase-orders`, `POST /api/v1/admin/goods-receipts`, `POST /api/v1/admin/transfer-orders`. They're registered only when `ADMIN_API_ENABLED=true`, require a bearer token checked with a constant-time comparison against a stored SHA-256 hash, connect as `app_writer`, validate business rules (for example, receipts can't exceed open PO quantity), write ledger movements in the same transaction, and record an `ops.audit_log` row. In production the flag is false, the module isn't imported and the writer credential doesn't exist.
 

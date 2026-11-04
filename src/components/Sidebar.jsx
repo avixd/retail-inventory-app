@@ -1,9 +1,10 @@
 /**
- * Primary navigation. NAV_ITEMS defines the nine views grouped into four
+ * Primary navigation. NAV_ITEMS defines the ten views grouped into four
  * sections (Overview, Inventory, Procurement, Master Data); the Sidebar
  * renders them and reports the selected id back to App via onSelect.
  */
 import {
+  Presentation,
   LayoutDashboard,
   TriangleAlert,
   Warehouse,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 export const NAV_ITEMS = [
+  { id: "summary", label: "Executive Summary", icon: Presentation, group: "Overview" },
   { id: "overview", label: "Inventory Overview", icon: LayoutDashboard, group: "Overview" },
   { id: "reorder", label: "Reorder / Low-Stock", icon: TriangleAlert, group: "Overview" },
 

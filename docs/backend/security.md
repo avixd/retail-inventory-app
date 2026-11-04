@@ -30,6 +30,7 @@ Because the data is synthetic and reproducible, the worst realistic outcome of a
 | **Elevation of privilege** | `app_reader` gains broader rights | Roles created with SQL, never the Neon console (console roles join `neon_superuser`); migration 0003 aborts if either role inherits it; no `SUPERUSER/CREATEROLE/CREATEDB/BYPASSRLS` (verified) | None material |
 | **Elevation of privilege** | Container compromise | Non-root user, slim image, no shell tools added, no write credentials in the environment | Low |
 | **Browser-side** | XSS or injected scripts on the public site | React escapes all output; Content-Security-Policy restricts scripts to the site itself and network calls to the site plus the API; `referrer` disabled; no cookies, no login, no forms that send data | Low |
+| **Read-only guarantee** | A visitor changes data, or believes they did | The public site is static files plus committed month-end snapshots: there is no write path to reach. The build sets `VITE_READ_ONLY`, which disables every form control (inputs, selects, add-line and submit buttons) and every action button, labelled "View only". The optional live API is `GET`-only on a read-only database role | None: nothing a visitor does can be stored or sent |
 
 ## 3. Least privilege, by credential
 
@@ -84,3 +85,4 @@ Run the section that matches what happened. Each step is in the browser; none ne
 | Date | Change |
 |---|---|
 | 02/11/2026 | Backend moved to a private repo; public repo holds no secrets. Added response cache, global rate cap, gzip, role-level timeouts and connection limits (migration 0004), CSP on the site, dependency audits, Dependabot, CI job timeouts, pinned uv image. |
+| 03/11/2026 | Month-end history served as static snapshots (no database at view time). Public build disables every form control and action button; "Create PO" on Reorder was previously unguarded. Public repo: secret scan in CI, branch protection (no force-push or deletion), secret scanning with push protection, read-only default Actions token. |

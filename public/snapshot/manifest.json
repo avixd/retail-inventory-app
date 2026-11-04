@@ -1,15 +1,16 @@
 {
-  "generatedAt": "2026-11-02T17:47:58+00:00",
+  "generatedAt": "2026-11-04T03:09:48+00:00",
   "asOf": "2026-10-31",
   "files": {
-    "dataset.json": 122155,
+    "dataset.json": 121870,
     "meta.json": 179,
-    "scorecard.json": 3454,
-    "spend-pareto.json": 1305,
+    "scorecard.json": 3451,
+    "spend-pareto.json": 1304,
     "procurement-summary.json": 593,
-    "replenishment.json": 63119,
-    "abc-xyz.json": 11167,
-    "kpis.json": 12704,
-    "forecast.json": 28093
+    "replenishment.json": 62986,
+    "abc-xyz.json": 11166,
+    "kpis.json": 12699,
+    "kpis-network.json": 1751,
+    "forecast.json": 28265
   }
 }

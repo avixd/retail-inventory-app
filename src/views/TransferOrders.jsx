@@ -33,10 +33,12 @@ function NewTransferForm({ onSubmit }) {
     <div className="panel" style={{ marginBottom: 18 }}>
       <div className="panel__head">
         <span className="panel__title">New transfer order</span>
-        <span className="pill pill--accent">Demo form</span>
+        <span className={`pill ${READ_ONLY ? "pill--muted" : "pill--accent"}`} title={READ_ONLY ? VIEW_ONLY_TIP : undefined}>{READ_ONLY ? "View only" : "Demo form"}</span>
       </div>
       <div className="panel__body">
         <form onSubmit={(e) => { e.preventDefault(); if (!READ_ONLY) onSubmit(units); }}>
+          {/* Public site is view-only: every control in the form is disabled, not just Create. */}
+          <fieldset className="form-fieldset" disabled={READ_ONLY}>
           <div className="grid-2">
             <div className="field">
               <label>From warehouse</label>
@@ -94,6 +96,7 @@ function NewTransferForm({ onSubmit }) {
               <span className="route">{fromWh} <ArrowRight size={14} /> {toWh}</span> · {units} units — demo only.
             </span>
           </div>
+          </fieldset>
         </form>
       </div>
     </div>
@@ -127,7 +130,7 @@ export default function TransferOrders({ viewLabel }) {
         desc="Move off-shelf stock between warehouses and stores — track each transfer end to end."
         right={
           <button className="btn" onClick={() => setShowForm((v) => !v)}>
-            <Plus size={15} /> New transfer
+            <Plus size={15} /> {READ_ONLY ? "Show transfer form" : "New transfer"}
           </button>
         }
       />

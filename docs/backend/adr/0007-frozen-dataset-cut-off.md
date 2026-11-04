@@ -18,4 +18,4 @@ The pipeline was designed to advance the simulated business every night. The own
 - Lower cost and attack surface: no scheduled database writes, no recurring Actions minutes, and any unexpected write is an anomaly worth investigating.
 - The "nightly pipeline" becomes a capability demonstrated by CI (which runs it on every push) rather than a live process.
 - Moving forward in time is a deliberate release: change the constant, run the workflow, review, publish.
-- Next step: an as-of selector so viewers can look back at month-ends within the history (see the improvement plan).
+- Looking back in time is served by month-end snapshots ([ADR 0008](0008-month-end-history-snapshots.md)).

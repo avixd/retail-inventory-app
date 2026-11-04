@@ -61,7 +61,7 @@ export default function GoodsReceipt({ viewLabel }) {
       <div className="panel" style={{ marginBottom: 16 }}>
         <div className="panel__head">
           <span className="panel__title">Receive against a purchase order</span>
-          <span className="pill pill--accent">Demo form</span>
+          <span className={`pill ${READ_ONLY ? "pill--muted" : "pill--accent"}`} title={READ_ONLY ? VIEW_ONLY_TIP : undefined}>{READ_ONLY ? "View only" : "Demo form"}</span>
         </div>
         <div className="panel__body">
           <div className="grid-2">
@@ -75,7 +75,7 @@ export default function GoodsReceipt({ viewLabel }) {
             </div>
             <div className="field">
               <label>Receive into warehouse</label>
-              <select value={warehouse} onChange={(e) => setWarehouse(e.target.value)}>
+              <select value={warehouse} onChange={(e) => setWarehouse(e.target.value)} disabled={READ_ONLY}>
                 {WAREHOUSES.filter((w) => w.type === "Distribution Center").map((w) => (
                   <option key={w.id} value={w.id}>{w.name}</option>
                 ))}
@@ -106,6 +106,7 @@ export default function GoodsReceipt({ viewLabel }) {
                           type="number"
                           min="0"
                           max={l.qty}
+                          disabled={READ_ONLY}
                           value={received[i] ?? 0}
                           onChange={(e) => setReceived((prev) => ({ ...prev, [i]: e.target.value }))}
                         />

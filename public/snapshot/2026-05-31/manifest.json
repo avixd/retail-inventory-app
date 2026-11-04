@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-11-04T02:52:29+00:00",
+  "asOf": "2026-05-31",
+  "files": {
+    "dataset.json": 121037,
+    "meta.json": 179,
+    "scorecard.json": 3455,
+    "spend-pareto.json": 1301,
+    "procurement-summary.json": 589,
+    "replenishment.json": 63116,
+    "abc-xyz.json": 11169,
+    "kpis.json": 12699,
+    "kpis-network.json": 1745,
+    "forecast.json": 27889
+  }
+}

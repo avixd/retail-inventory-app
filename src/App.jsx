@@ -3,12 +3,13 @@
  *
  * Navigation is one piece of state (`active`): the Sidebar sets it, the VIEWS
  * map turns it into a component, and that component is rendered. No routing
- * library — a single state variable and a lookup is all nine self-contained
- * views need.
+ * library — a single state variable and a lookup is all ten self-contained
+ * views need. Views may call onNavigate(id) to link to another view.
  */
 import { useState } from "react";
 import Header from "./components/Header";
 import Sidebar, { NAV_ITEMS } from "./components/Sidebar";
+import ExecutiveSummary from "./views/ExecutiveSummary";
 import InventoryOverview from "./views/InventoryOverview";
 import ReorderAlerts from "./views/ReorderAlerts";
 import OffShelf from "./views/OffShelf";
@@ -22,6 +23,7 @@ import { useDataStatus } from "./data/useDataStatus";
 import "./App.css";
 
 const VIEWS = {
+  summary: ExecutiveSummary,
   overview: InventoryOverview,
   reorder: ReorderAlerts,
   offshelf: OffShelf,
@@ -34,7 +36,7 @@ const VIEWS = {
 };
 
 function App() {
-  const [active, setActive] = useState("overview");
+  const [active, setActive] = useState("summary");
   // Bumps when snapshot or live data replaces the shared arrays; keying the view
   // on it remounts the screen so every derived number is recomputed.
   const { version } = useDataStatus();
@@ -47,7 +49,7 @@ function App() {
       <Header />
       <Sidebar active={active} onSelect={setActive} />
       <main className="main">
-        <ActiveView key={`${active}-${version}`} viewLabel={label} navLabel={label} />
+        <ActiveView key={`${active}-${version}`} viewLabel={label} navLabel={label} onNavigate={setActive} />
       </main>
     </div>
   );

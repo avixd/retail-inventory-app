@@ -21,10 +21,13 @@ In most operations those answers live in different systems (an ERP for stock, a 
 
 ## The solution
 
-A single-page dashboard that unifies those questions into nine linked views over one shared data model, so a planner or analyst can move from a headline number to the underlying rows in a couple of clicks.
+A single-page dashboard that unifies those questions into ten linked views over one shared data model, so a planner or analyst can move from a headline number to the underlying rows in a couple of clicks.
+
+It opens on an **Executive Summary**: six findings for the month-end, each with a money or rate figure, the change since the previous month-end, a one-line takeaway and a link to the view that explains it. An **As of** selector in the header replays the whole dashboard at any of the last twelve month-ends.
 
 | Area | View | What it answers |
 |---|---|---|
+| Overview | Executive Summary | Inventory investment, sales at risk, stock-out rate, network GMROI, supplier concentration and overdue payables, each vs the prior month-end; 12-month trend |
 | Overview | Inventory Overview | On-hand trend, inventory value at cost and retail, split by category and location |
 | Overview | Reorder / Low-Stock | Which SKUs are at or below reorder point, and the suggested PO value to cover them |
 | Inventory | Off-Shelf · Warehouse | Reserve stock, warehouse floor map with bin fill levels, and capital tied up off the shelf |
@@ -64,7 +67,7 @@ flowchart LR
     API -.->|"2. live data when awake"| UI
 ```
 
-The dashboard loads the committed snapshot first, then switches to the live API when it answers; a badge in the header says which ("Snapshot · as of…" or "Live · as of…"). Views keep their original design: `hydrate()` replaces the in-memory model's contents with backend data, so every selector and chart runs unchanged on real volumes (60 SKUs, 8 sites, ~200k ledger rows).
+The dashboard loads the committed snapshot first, then switches to the live API when it answers; a badge in the header says which ("Snapshot · as of…" or "Live · as of…"). Views keep their original design: `hydrate()` replaces the in-memory model's contents with backend data, so every selector and chart runs unchanged on real volumes (60 SKUs, 8 sites, ~200k ledger rows). Twelve month-end snapshots, built offline from the deterministic simulation, let the dashboard show any of the last twelve month-ends without touching a database.
 
 **Security posture:** this repo contains no secrets and needs none. The only network call the page may make is to the read-only API (enforced by a Content-Security-Policy). The API's database role can only `SELECT` from analytics views, with a read-only transaction default, query timeouts and connection limits. Details: [docs/backend/security.md](docs/backend/security.md).
 
@@ -80,7 +83,7 @@ The dashboard loads the committed snapshot first, then switches to the live API 
 | Hosting | GitHub Pages via GitHub Actions | Free, static, auto-deployed on push |
 | Backend (private) | Python 3.12, FastAPI, Postgres 16, numpy/pandas | Read-only API; forecasting and replenishment engines |
 | Backend hosting | Render (API) + Neon (Postgres), free tiers | $0 with no payment method, so no bill is possible ([cost](docs/backend/cost.md)) |
-| Testing | pytest, Node test runner | 40 API, 29 pipeline and 21 front-end contract tests |
+| Testing | pytest, Node test runner | 42 API and 29 pipeline tests; front end: summary-maths unit tests, a check of every published month, and API contract tests |
 
 ## Documentation
 
@@ -103,7 +106,8 @@ Start at **[docs/README.md](docs/README.md)**.
 npm install
 npm run dev      # http://localhost:5173/retail-inventory-app/  (uses the committed snapshot)
 npm run build    # static output in dist/, with the Content-Security-Policy injected
-npm run test:api # contract tests against a running API (API_URL, default http://localhost:8000)
+npm run test:unit # summary maths + every published month-end snapshot (offline)
+npm run test:api  # contract tests against a running API (API_URL, default http://localhost:8000)
 ```
 
 Running the backend too: [docs/backend/local-dev.md](docs/backend/local-dev.md).

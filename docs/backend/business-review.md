@@ -27,7 +27,7 @@ A multi-site retailer's inventory decisions (what to reorder, where capital is t
 | Off-shelf / warehouse | How much capital sits in DC reserve; bin-level fill |
 | Procure-to-pay | Where POs are stuck; cycle time; payables by terms |
 | Supplier performance | Weighted, transaction-based scorecard; cohorts; spend Pareto |
-| Platform (behind the screen) | Ledger, star schema, forecasts with back-tested accuracy, replenishment policy, 9 data-quality gates, data dictionary, read-only API |
+| Platform (behind the screen) | Ledger, star schema, forecasts with back-tested accuracy, replenishment policy, 11 data-quality gates, data dictionary, read-only API |
 
 ## 4. Unique selling points
 
@@ -68,9 +68,9 @@ A multi-site retailer's inventory decisions (what to reorder, where capital is t
 
 | Weakness | Why it matters | Mitigation or next step |
 |---|---|---|
-| **Synthetic data** | Patterns are cleaner than real life: 59 of 60 SKUs classify as predictable (X), DC reserve is 88% of stock, network GMROI (~11×) is high for retail | Say so on every page (done); calibrate the simulator against public retail benchmarks; the method transfers to real data unchanged |
-| **Bins over capacity** | The simulator puts stock away into each SKU's assigned bin without overflowing to spare bins: at 31 Oct, 110 of 192 DC bins exceed capacity (worst 5.7×). The warehouse map shows them as "Full", which understates the problem. Found while recording the demo | A data-quality warning now reports it on every load; fix put-away to overflow into empty bins, then rebuild the history (first item of the next phase) |
-| **Forecasts ignore promotions** | The simulator generates promotions but the models don't use them, so promo weeks will be under-forecast | Add a promotion uplift regressor; report accuracy separately for promo weeks |
+| **Synthetic data** | Patterns are generated, not observed. Variability is calibrated (XYZ 35/15/10, lost sales ~6% of demand) and costs and prices change over time, but 88% of value sits in DCs and GMROI (~10-11×) is high for retail | Say so on every page (done); the method transfers to real data unchanged |
+| **Bins over capacity (fixed)** | The simulator put stock away into each SKU's assigned bin without overflowing to spare bins: at 31 Oct, 110 of 192 DC bins exceed capacity (worst 5.7×). The warehouse map shows them as "Full", which understates the problem. Found while recording the demo | A data-quality warning now reports it on every load; fix put-away to overflow into empty bins, then rebuild the history (first item of the next phase) |
+| **Promotion modelling helps less than expected** | The lift is recovered accurately (≈54% for a 20% discount vs 50% simulated) but promotion-week error improves only ~1 point, because week-to-week demand swings dominate | Reported as measured on the Demand Forecast view; next: price elasticity and a model of the demand swings (e.g. external signals) |
 | **Small scale** | 60 SKUs and 8 sites; real retailers have 10k-1M SKU-locations | Architecture scales (set-based SQL, per-series models parallelise); untested at that size |
 | **Read-only** | Shows decisions but can't action them (raise the PO, approve the transfer) | Write paths exist in code for dev only; production would need authentication, approvals and audit |
 | **Monthly granularity for history** | Month-end replay can't show intra-month events | Fine for governance reviews; daily ops would use the live API |

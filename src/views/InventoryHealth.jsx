@@ -63,7 +63,7 @@ export default function InventoryHealth({ viewLabel }) {
             <p className="chart-card__sub">Rows: value (A = top 80% of revenue, B = next 15%, C = last 5%). Columns: predictability of weekly demand.</p>
           </div>
         </div>
-        <div className="abc-matrix" role="table" aria-label="ABC-XYZ matrix">
+        <div className="abc-matrix" role="region" aria-label="ABC-XYZ matrix: value by predictability">
           <div className="abc-matrix__corner" />
           {["X · steady", "Y · variable", "Z · erratic"].map((h) => <div key={h} className="abc-matrix__colhead">{h}</div>)}
           {["A", "B", "C"].map((a) => (
@@ -120,7 +120,7 @@ export default function InventoryHealth({ viewLabel }) {
           <li><b>ABC</b> ranks SKUs by trailing 12-month revenue: A until 80% of cumulative revenue, B to 95%, C the rest.</li>
           <li><b>XYZ</b> uses the coefficient of variation of weekly demand over 26 weeks: X ≤ 0.5, Y ≤ 1.0, Z above.</li>
           <li><b>Inventory held</b> is units on hand at stores and DCs at the month-end, valued at cost.</li>
-          <li><b>Caveat:</b> the synthetic demand is smoother than real retail, so {xCount} of {rows.length} SKUs classify as X. With real data, expect many more Y and Z items, which is where this matrix earns its keep.</li>
+          <li><b>Mix this month:</b> {xCount} of {rows.length} SKUs are X (steady). Y and Z items are where buffers, review frequency and range decisions matter most.</li>
         </ul>
       </details>
     </>

@@ -62,6 +62,10 @@ The system exists to answer the questions a retail inventory and procurement tea
 | FR-24 | Data trust: each month publishes the data-quality results of the load behind it | NFR-06 |
 | FR-25 | Provenance: every snapshot manifest carries the git commit and a SHA-256 per file, verified by tests | NFR-06 |
 | FR-26 | One metrics catalogue (`metrics/metrics.toml`) defines every KPI; documentation is generated and validated in CI | BR-01 to BR-09 |
+| FR-27 | Cost and price history kept as SCD Type 2; sales COGS, margin and KPI inventory valuation use the cost in force on each date | BR-07, BR-08 |
+| FR-28 | Forecasts model planned promotions as a lift on base demand; promotion-week accuracy reported with and without it | BR-06 |
+| FR-29 | Simulated demand has realistic product-level variability (steady, variable, erratic profiles) | BR-02, BR-06 |
+| FR-30 | Production monitor every 6 hours with alerting by GitHub issue; WCAG 2.0/2.1 A+AA audit enforced in CI | NFR-06, accessibility |
 
 ## 4. Non-functional requirements
 
@@ -175,7 +179,7 @@ flowchart LR
     C["Owner moves DATA_CUTOFF<br/>(deliberate release)"] --> B["release-data.sh<br/>local database only"]
     B --> S["seed to first month-end,<br/>then simulate month by month"]
     S --> A["analyse as of each month-end<br/>forecast · replenishment · ABC-XYZ · KPIs"]
-    A --> Q{"9 data-quality<br/>checks pass?"}
+    A --> Q{"11 data-quality<br/>checks pass?"}
     Q -->|yes| E["export 12 month-end snapshots<br/>+ data dictionary"]
     E --> T["front-end tests on every month"]
     T --> R["owner reviews, commits,<br/>Pages deploys"]

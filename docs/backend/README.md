@@ -28,7 +28,7 @@ flowchart LR
     N -- "dispatch deploy" --> Site
 ```
 
-1. **The data is frozen at a cut-off date (31 Oct 2026).** Twenty-four months of history were simulated day by day (sales, purchase orders, receipts, transfers) into an append-only stock ledger, then the analytics layer, 300 SKU-location forecasts and reorder points were computed. Nine data-quality checks gate every load; any failure rolls it back. Nothing changes the database on a timer or on deploy; moving the cut-off is a deliberate, manual step ([ADR 0007](adr/0007-frozen-dataset-cut-off.md)).
+1. **The data is frozen at a cut-off date (31 Oct 2026).** Twenty-four months of history were simulated day by day (sales, purchase orders, receipts, transfers) into an append-only stock ledger, then the analytics layer, 300 SKU-location forecasts and reorder points were computed. Eleven data-quality checks gate every load; any failure rolls it back. Nothing changes the database on a timer or on deploy; moving the cut-off is a deliberate, manual step ([ADR 0007](adr/0007-frozen-dataset-cut-off.md)).
 2. **The API** serves the analytics layer, read-only, with ETags, a 15-minute response cache and gzip.
 3. **The dashboard** opens on an **Executive Summary**: six findings for the month-end (inventory investment, sales at risk, stock-out rate, GMROI, supplier concentration, overdue payables), each compared with the month before and linked to the view that explains it. An **As of** selector in the header shows the business at any of the last twelve month-ends, from snapshots built offline ([ADR 0008](adr/0008-month-end-history-snapshots.md)). The latest month can also come live from the API; a badge shows which ("Snapshot", "History" or "Live").
 

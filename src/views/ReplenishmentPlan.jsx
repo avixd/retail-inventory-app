@@ -117,7 +117,7 @@ export default function ReplenishmentPlan({ viewLabel }) {
             <span className="pill pill--muted">{shown.length} of {rows.length}</span>
           </div>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>

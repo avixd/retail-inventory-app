@@ -33,7 +33,7 @@ function Scorecard({ s }) {
           <h4 className="chart-card__title">{s.name} · scorecard</h4>
           <p className="chart-card__sub">{s.id} · weighted performance score {s.score}/100</p>
         </div>
-        <span className="pill" style={{ background: `color-mix(in srgb, ${s.cohort.tone} 16%, #fff)`, color: s.cohort.tone }}>
+        <span className="pill" style={{ background: `color-mix(in srgb, ${s.cohort.tone} 16%, #fff)`, color: `color-mix(in srgb, ${s.cohort.tone} 55%, #000)` }}>
           {s.cohort.label} · {s.cohort.action}
         </span>
       </div>
@@ -245,7 +245,7 @@ export default function SupplierPerformance({ viewLabel }) {
           <h4 className="chart-card__title">Contribution detail</h4>
           <span className="pill">{ranked.length} suppliers</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>
@@ -261,7 +261,7 @@ export default function SupplierPerformance({ viewLabel }) {
                 <tr key={r.id}>
                   <td style={{ fontWeight: 700, color: "var(--ink-900)" }}>{r.rank}</td>
                   <td>{r.name}</td>
-                  <td><span className="pill" style={{ background: `color-mix(in srgb, ${r.cohort.tone} 16%, #fff)`, color: r.cohort.tone }}>{r.cohort.label}</span></td>
+                  <td><span className="pill" style={{ background: `color-mix(in srgb, ${r.cohort.tone} 16%, #fff)`, color: `color-mix(in srgb, ${r.cohort.tone} 55%, #000)` }}>{r.cohort.label}</span></td>
                   <td className="num-cell" style={{ fontWeight: 700 }}>{CAD(r.spendYtd)}</td>
                   <td className="num-cell">{r.pct.toFixed(1)}%</td>
                   <td className="num-cell">{r.cumPct.toFixed(1)}%</td>
@@ -318,7 +318,7 @@ export default function SupplierPerformance({ viewLabel }) {
           </div>
           <span className="pill">{metrics.length} suppliers</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>
@@ -341,7 +341,7 @@ export default function SupplierPerformance({ viewLabel }) {
                   onClick={() => setSelected(m.id)}
                 >
                   <td style={{ fontWeight: 700, color: "var(--ink-900)" }}>{m.name}</td>
-                  <td><span className="pill" style={{ background: `color-mix(in srgb, ${m.cohort.tone} 16%, #fff)`, color: m.cohort.tone }}>{m.cohort.label}</span></td>
+                  <td><span className="pill" style={{ background: `color-mix(in srgb, ${m.cohort.tone} 16%, #fff)`, color: `color-mix(in srgb, ${m.cohort.tone} 55%, #000)` }}>{m.cohort.label}</span></td>
                   <td className="num-cell" style={{ fontWeight: 800 }}>{m.score}</td>
                   <td>
                     <span className="route">{m.terms} <ArrowRight size={12} /> {m.preferredTerms}</span>

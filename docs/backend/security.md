@@ -48,6 +48,7 @@ Because the data is synthetic and reproducible, the worst realistic outcome of a
 - **Secrets:** gitleaks fails CI on any committed secret; enable **secret scanning + push protection** on the public repo (free for public repos) so a secret is blocked before it lands.
 - **Dependencies:** Dependabot alerts and weekly update PRs; `pip-audit` / `npm audit` fail CI on known vulnerabilities.
 - **Usage:** Neon and Render dashboards show compute, storage and bandwidth; check monthly (runbook). A sudden spike is the signal for §5.
+- **Production monitor (every 6 hours):** site up with its CSP, month index intact, **every published file matches its manifest SHA-256** (detects tampering or corruption of the published data), blocking data-quality checks passed, portfolio links and demo video live, API health once deployed. Failure opens a GitHub issue, which emails the owner ([ADR 0012](adr/0012-monitoring-and-accessibility.md)).
 
 ## 5. Breach response playbook
 

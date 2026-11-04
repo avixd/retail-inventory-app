@@ -19,7 +19,7 @@ flowchart LR
         Models[("models: ABC-XYZ · forecasts<br/>replenishment · KPIs")]
         Views["API views v_* and dataset views v_ds_*"]
     end
-    DQ{{"4 · 9 data-quality checks<br/>(error = whole run rolled back)"}}
+    DQ{{"4 · 11 data-quality checks<br/>(error = whole run rolled back)"}}
     subgraph Pub["5 · Publish"]
         API["Read-only API<br/>/api/v1/*"]
         Snap["Month-end snapshots<br/>12 × public/snapshot/&lt;date&gt;/"]
@@ -35,9 +35,9 @@ flowchart LR
 
 | Stage | Code | Input | Output | Runs |
 |---|---|---|---|---|
-| 1. Generate | `pipeline/retail_pipeline/generate/` | Seed number, start date | Rows for every core table, plus the simulator's future events (`ops.sim_plan`) | `seed` once, then `nightly` per day |
-| 2. Record | migrations 0001 | Generated rows (bulk `COPY`) | Normalised core tables; stock only ever changes by inserting ledger rows | Same transaction as stage 1 |
-| 3a. Facts | `analytics.refresh_facts()` | Core tables | `fact_inventory_daily` (materialised), `fact_sales_daily`, `fact_po_line`, `dim_*` | Every load |
+| 1. Generate | `pipeline/retail_pipeline/generate/` | Seed number, start date | Rows for every core table, plus the simulator's future events (`ops.sim_plan`). `realism.py` adds product-level weekly demand shocks by volatility profile and the dated cost/price schedule ([ADR 0011](adr/0011-demand-realism.md), [ADR 0009](adr/0009-scd2-cost-price-history.md)) | `seed` once, then `nightly` per day |
+| 2. Record | migrations 0001, 0009 | Generated rows (bulk `COPY`) | Normalised core tables; stock only ever changes by inserting ledger rows; cost/price changes append to `product_price_history` | Same transaction as stage 1 |
+| 3a. Facts | `analytics.refresh_facts()` | Core tables | `fact_inventory_daily` (materialised), `fact_sales_daily` (COGS at the cost in force on the sale date), `fact_po_line`, `dim_*`, `dim_product_scd2` | Every load |
 | 3b. Models | `pipeline/retail_pipeline/analytics/` | Facts | ABC-XYZ classes, 300 weekly forecasts with 80% intervals and back-test accuracy, reorder policy per SKU-site, monthly KPIs per site | Every load (`--skip-analytics` to defer), or `analyze --as-of` |
 | 4. Check | `pipeline/retail_pipeline/dq.py` | Everything above | `ops.dq_result`; any **error** rolls the run back | Every load |
 | 5a. Serve | `backend/app/` | `analytics.v_*` only, as `app_reader` | JSON, `GET` only, ETag, cached, rate-limited | On request (when deployed) |
@@ -48,7 +48,7 @@ Data is **frozen at 31 Oct 2026** ([ADR 0007](adr/0007-frozen-dataset-cut-off.md
 
 ## 2. Data-quality gates
 
-All nine run inside the load's transaction, after the analytics, so a failure leaves the previous good state untouched.
+All eleven run inside the load's transaction, after the analytics, so a failure leaves the previous good state untouched.
 
 | Check | Severity | Guarantees |
 |---|---|---|
@@ -59,6 +59,8 @@ All nine run inside the load's transaction, after the analytics, so a failure le
 | `inventory_fact_reconciles` | error | The inventory fact's latest day equals the ledger's on-hand, row for row |
 | `sales_loaded_through_as_of` | error | Sales are loaded through exactly the simulated date |
 | `open_po_without_plan` | warn | Every open PO has a pending simulator event, so none is stuck forever |
+| `price_history_current` | error | Each product's current cost and price equal its latest dated version (SCD Type 2 integrity) |
+| `price_history_coverage` | error | Every product has a cost/price version in force from the first day of history |
 | `price_above_cost` | error | Every active product has a positive cost and sells above it (margin and GMROI depend on it) |
 | `bin_over_capacity` | warn | No DC bin holds more than its capacity. Slots are sized from the replenishment policy at peak demand (catalogue v2), so this is ~0; brief spikes when demand runs above expectation are warned, not blocked |
 
@@ -67,7 +69,7 @@ All nine run inside the load's transaction, after the analytics, so a failure le
 | Model | Method | Output used by |
 |---|---|---|
 | ABC-XYZ | A/B/C by cumulative share of trailing 12-month revenue (80/95/100%); X/Y/Z by coefficient of variation of weekly demand over 26 weeks (≤ 0.5 / ≤ 1.0 / above) | Service-level targets; product segments |
-| Forecast | Per SKU-site series, candidates compared on a rolling-origin back-test (4 origins × 8-week horizon) (seasonal naive, simple exponential smoothing, Holt-Winters, Croston-SBA for intermittent demand); lowest WAPE wins | Forecast view (Phase 2); accuracy reported against the seasonal-naive baseline |
+| Forecast | Per SKU-site series, candidates compared on a rolling-origin back-test (4 origins × 8-week horizon) (seasonal naive, simple exponential smoothing, Holt-Winters, Croston-SBA for intermittent demand); lowest WAPE wins. Promotions: demand = base × (1 + β × weekly discount), β estimated per series without look-ahead, removed before fitting and re-applied to planned promotion weeks ([ADR 0010](adr/0010-promotion-aware-forecasting.md)) | Forecast view (Phase 2); accuracy reported against the seasonal-naive baseline |
 | Replenishment | Service level by ABC class (A 98%, B 95%, C 90%); safety stock = z·√(L·σd² + d²·σL²); reorder point = d·L + SS; EOQ = √(2·D·S / H) | Product reorder points, reorder queue, sales at risk |
 | KPIs | Per site per month: turns, days of supply, GMROI, stock-out rate. Network: margin and COGS over store **and** DC inventory | Executive Summary, overview |
 
@@ -128,7 +130,7 @@ To move the cut-off itself, change `DATA_CUTOFF` in `pipeline/retail_pipeline/ge
 | Deterministic, reproducible data | Seeded simulator; the same code and seed rebuild identical history; tested |
 | Schema as code, versioned | Alembic migrations 0001-0008 run in CI on every push; catalogue version guards the simulator |
 | Data contracts | Front-end contract tests against the API; snapshot tests on every published month; contract version in each manifest |
-| Data quality as gates, not reports | 9 checks inside the load; blocking checks roll back; results published per month |
+| Data quality as gates, not reports | 11 checks inside the load; blocking checks roll back; results published per month |
 | Single definition of each metric | `metrics/metrics.toml` → generated `metrics.md`; CI validates the KPI tree |
 | Self-documenting schema | Every table and view carries a `COMMENT`; the data dictionary is generated and checked in CI |
 | Least privilege along the pipeline | Generator, loader and reader run as different roles; the ledger is insert-only for the loader |

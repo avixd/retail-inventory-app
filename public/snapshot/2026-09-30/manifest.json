@@ -1,61 +1,61 @@
 {
-  "generatedAt": "2026-11-04T12:15:43+00:00",
+  "generatedAt": "2026-11-04T13:27:15+00:00",
   "asOf": "2026-09-30",
   "contractVersion": 2,
   "apiVersion": "1.0.0",
-  "gitSha": "5bf16f8",
+  "gitSha": "b7a6931",
   "files": {
     "dataset.json": {
-      "bytes": 119946,
-      "sha256": "b9c9d148160ead3dc287a540cd87ef77af153aab08819bfd4e0ddf263a695042"
+      "bytes": 118362,
+      "sha256": "b0bc78100c84d7d7c4edf9689311e02560295fd6628c0d52e47ba70f7d8066b4"
     },
     "meta.json": {
       "bytes": 183,
-      "sha256": "a9655e6ba830e84b20630e2b4541127a4bdad49be04b846ce06f0d94346b6916"
+      "sha256": "88d3850726bbcc4bdccc0d98a55272181b8ecba20bdccb586f08c8f8b87f4aec"
     },
     "scorecard.json": {
-      "bytes": 3454,
-      "sha256": "8ac8b5e38c6867d21829338f607dcc9fa3bf05cf94c8403c7fa4cd373707edb6"
+      "bytes": 3453,
+      "sha256": "fb71f756af539e26e676b6892b1fa6815b954a4cb0b7cae0214864319dfd41c0"
     },
     "spend-pareto.json": {
-      "bytes": 1306,
-      "sha256": "122a05c58fd25e842e159c108adfd163cda0fb53c4c799f26d7f0c0fee139c2e"
+      "bytes": 1316,
+      "sha256": "118aa472b1ae129370b4afa62511e9bd8f62f1a26b823fd215ad1be7dadbb582"
     },
     "procurement-summary.json": {
-      "bytes": 585,
-      "sha256": "33a4844ba24b56848600778ce450da2409426253a4d6d9779f7fa2617d5f74c4"
+      "bytes": 593,
+      "sha256": "5e7efb3d58a5523020806f8d1287000abaa536a87ce566871d3f0d5d72576206"
     },
     "replenishment.json": {
-      "bytes": 150198,
-      "sha256": "bf7db7384624aeecaade5d4612bd7c09997af05518b39c68bac3bbaa69f6d6f7"
+      "bytes": 150544,
+      "sha256": "6bf6b8de7a5a1d7e0e778a4b22b746000eb3b14ed6ff0fc7b6e38fd142956065"
     },
     "abc-xyz.json": {
-      "bytes": 11172,
-      "sha256": "9ac5ac91896d4ec9f24c485dc5e99c9863ce6269fc7e9b89fbe2ff49b0fca49d"
+      "bytes": 11171,
+      "sha256": "907183f8410628ce465964d4ac17699448d237fb0837622691a3f2d13efcc9ba"
     },
     "kpis.json": {
-      "bytes": 12700,
-      "sha256": "9d53afd4e1093e08d165b94d175ddd5e1c16720b6d2ecd01530d1e189ff61540"
+      "bytes": 12699,
+      "sha256": "55b61e880268a222ef9a402fba4f32bd72b1928d3aacc9600c6df4e8b158bc8e"
     },
     "kpis-network.json": {
-      "bytes": 1751,
-      "sha256": "d84053c07dc5e47a13c0f2092c3d51791fb8ac91e0d3577f91860e1734f89080"
+      "bytes": 1743,
+      "sha256": "3344abb12b03491b8670b9d8f3c781bac48c61c8d3cc6197225beb823d980075"
     },
     "forecast.json": {
-      "bytes": 28303,
-      "sha256": "362101174f30c51845f687e58c2d09322ad33e58589cc06196e7f4b936bdd346"
+      "bytes": 27895,
+      "sha256": "80b312b60e9d4c37e11abb001312ff4fb04034e23983135847e973f37f9da5d8"
     },
     "forecast-network.json": {
-      "bytes": 212741,
-      "sha256": "c8ad75bfbc915d2d3f815fe3a9acb1c05d822b557c771e75513fe6bb42f48445"
+      "bytes": 212763,
+      "sha256": "88f8aee3cc6e03fd23b20d8df36ddee1ef100ad4fcad337a5d3b4046bda441cc"
     },
     "forecast-accuracy.json": {
-      "bytes": 7973,
-      "sha256": "092902b740a1616639051b28479038b28532dec071b14563ab8ac0f600800ad4"
+      "bytes": 7967,
+      "sha256": "393efec95ab766f731a032fc9de0f67b7cc911111d899962b192fa94869a998a"
     },
     "data-quality.json": {
-      "bytes": 1944,
-      "sha256": "0de89180896846a7b7d8badf08b8b05c5ae4fec1e9729375c32c68a2617c1088"
+      "bytes": 2412,
+      "sha256": "cb98101c8e528ddbf2b11c1046ad7f2266c5a83e7881f3d66a979b5d23a35c9a"
     }
   }
 }

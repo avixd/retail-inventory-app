@@ -16,6 +16,8 @@ What can go wrong, what visitors see, and what to do. Visitors never see an erro
 
 | Symptom | Likely cause | Action |
 |---|---|---|
+| "Production monitor: checks failing" issue opened | A check in `scripts/monitor.mjs` failed: site down, checksum mismatch, data-quality failure, broken portfolio link or API down | Open the issue: it lists every check. **Checksum mismatch** = published data changed outside a release: treat as an incident (security.md §5C), redeploy from the last good commit. Site or link down: check GitHub Status, then the last deploy. The issue closes itself on the next healthy run |
+| Monitor stopped running | GitHub pauses scheduled workflows in public repos after 60 days without repository activity (it emails first) | Public repo → **Actions → Production monitor → Enable workflow**, then **Run workflow** once |
 | Badge stays on **Snapshot** for more than 2 minutes | Render free instance waking slowly, or the monthly free hours are used up | Check the Render dashboard. If hours are exhausted the service resumes next month; the site keeps working on the snapshot |
 | API returns 503 "Live data is temporarily unavailable" | Neon compute suspended and slow to resume, or monthly compute quota reached | Neon dashboard → usage. Quota resets monthly |
 | Data advance failed | Code error, or a data-quality check failed (the whole day was rolled back) | Open the failed run's log; then query `SELECT * FROM ops.dq_result ORDER BY checked_at DESC LIMIT 20;` and `SELECT * FROM ops.job_run ORDER BY started_at DESC LIMIT 5;`. Fix, then **Actions → Nightly pipeline → Run workflow**. It catches up missed days (up to 7) automatically |

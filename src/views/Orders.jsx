@@ -122,7 +122,7 @@ function PlacePO() {
           <div className="grid-2">
             <div className="field">
               <label>Supplier</label>
-              <select value={supplier} onChange={(e) => setSupplier(e.target.value)}>
+              <select aria-label="Supplier" value={supplier} onChange={(e) => setSupplier(e.target.value)}>
                 {SUPPLIERS.map((s) => (
                   <option key={s.id} value={s.id}>{s.name} · {s.terms}</option>
                 ))}
@@ -130,7 +130,7 @@ function PlacePO() {
             </div>
             <div className="field">
               <label>Expected delivery</label>
-              <input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} />
+              <input aria-label="Expected delivery" type="date" value={expected} onChange={(e) => setExpected(e.target.value)} aria-label="Expected delivery date" />
             </div>
           </div>
 
@@ -155,6 +155,7 @@ function PlacePO() {
                       <select
                         value={l.sku}
                         onChange={(e) => setLine(i, { sku: e.target.value })}
+                      aria-label={`Product for line ${i + 1}`}
                         style={{ padding: "7px 10px", borderRadius: 8, border: "1px solid var(--border-strong)", fontSize: 13, fontFamily: "inherit" }}
                       >
                         {PRODUCTS.map((p2) => (
@@ -168,6 +169,7 @@ function PlacePO() {
                         className="cell-input"
                         type="number"
                         min="1"
+                        aria-label={`Quantity for line ${i + 1}`}
                         value={l.qty}
                         onChange={(e) => setLine(i, { qty: e.target.value })}
                       />
@@ -238,7 +240,7 @@ function POList() {
           <h4 className="chart-card__title">Purchase orders</h4>
           <span className="pill">{PURCHASE_ORDERS.length} orders</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>
@@ -337,7 +339,7 @@ function InvoiceList() {
           </div>
           <span className="pill pill--accent">{CAD(totalOpen)} outstanding</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>

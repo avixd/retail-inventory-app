@@ -16,6 +16,7 @@ flowchart TD
     reserve_share("Share of inventory in DC reserve<br/><small>Operational</small>")
     forecast_wape("Forecast error (WAPE)<br/><small>Operational</small>")
     forecast_bias("Forecast bias<br/><small>Operational</small>")
+    promo_week_wape("Promotion-week forecast error<br/><small>Operational</small>")
     stockout_rate{"Store stock-out rate<br/><small>Guardrail</small>"}
     sales_at_risk{"Sales at risk over the next lead time<br/><small>Guardrail</small>"}
     supplier_concentration("Top-3 supplier share of spend<br/><small>Operational</small>")
@@ -27,6 +28,7 @@ flowchart TD
     reserve_share --> turns
     forecast_wape --> turns
     forecast_bias --> forecast_wape
+    promo_week_wape --> forecast_wape
     stockout_rate -.->|guards| gmroi
     sales_at_risk -.->|guards| stockout_rate
     supplier_concentration --> stockout_rate
@@ -47,8 +49,9 @@ Best rolling 3-month average of the metric over the trailing 12 month-ends: perf
 | **Markup on cost** | Driver | higher | gross margin / cost of goods sold (= GMROI / turns, an exact identity) | x | month x network | data-derived (see above) | Merchandising / Pricing |
 | **Days of supply (network)** | Driver | lower | average inventory at cost / average daily cost of goods sold | days | month x network | data-derived (see above) | Inventory planning |
 | **Share of inventory in DC reserve** | Operational | lower | units on hand at DCs x unit cost / all units on hand x unit cost, at the month-end | % | month-end x network | none (context) | Supply chain |
-| **Forecast error (WAPE)** | Operational | lower | sum \|forecast - actual\| / sum actual over rolling-origin back-tests (4 origins x 8 weeks), pooled across store series | % | forecast run x network | must beat the seasonal-naive baseline | Demand planning / Data science |
+| **Forecast error (WAPE)** | Operational | lower | sum \|forecast - actual\| / sum actual over rolling-origin back-tests (4 origins x 8 weeks), pooled across store series; promotions modelled as a lift on base demand | % | forecast run x network | must beat the seasonal-naive baseline | Demand planning / Data science |
 | **Forecast bias** | Operational | closer to zero | sum (forecast - actual) / sum actual over the same back-tests; positive = over-forecasting | % | forecast run x network | within +/- 5% | Demand planning / Data science |
+| **Promotion-week forecast error** | Operational | lower | sum \|forecast - actual\| / sum actual over back-test weeks that had a promotion, with the promotion lift applied (also reported without it) | % | forecast run x network | must beat the same forecast without the promotion lift | Demand planning / Data science |
 | **Store stock-out rate** | Guardrail | lower | store-SKU-days ending with zero on hand / all store-SKU-days in the month | % | month x network (also by store) | data-derived (see above) | Store operations |
 | **Sales at risk over the next lead time** | Guardrail | lower | sum over positions OUT or BELOW reorder point of max(0, avg daily demand x mean lead time - on hand) x unit price | CAD | month-end x position (SKU x site) | none (trend vs prior month) | Inventory planning |
 | **Top-3 supplier share of spend** | Operational | lower | year-to-date ordered spend with the three largest suppliers / all YTD ordered spend | % | month-end x network | none (risk context) | Procurement |
@@ -66,6 +69,7 @@ Best rolling 3-month average of the metric over the trailing 12 month-ends: perf
 | Share of inventory in DC reserve | Capital not yet on a shelf. High reserve with low store availability means stock is in the wrong place. | `dataset.json (stock, products) -> summary.js inventoryInvestment` |
 | Forecast error (WAPE) | Better forecasts need less safety stock for the same service, which raises turns. | `analytics.v_forecast_accuracy_series -> /api/v1/forecast/accuracy` |
 | Forecast bias | Persistent over-forecasting builds excess stock; under-forecasting causes stock-outs. Accuracy alone hides direction. | `/api/v1/forecast/accuracy` |
+| Promotion-week forecast error | Promotions roughly double demand; missing them empties shelves in the weeks that matter most. | `analytics.forecast_accuracy (promo_* columns) -> /api/v1/forecast/accuracy` |
 | Store stock-out rate | Guardrail on the north star: cutting stock to lift GMROI is only good if shelves stay full. | `analytics.v_kpi_network_monthly; analytics.inventory_kpi_monthly by site` |
 | Sales at risk over the next lead time | Forward-looking: the revenue current stock can't protect before replenishment lands. | `replenishment.json -> summary.js salesAtRisk` |
 | Top-3 supplier share of spend | Supply risk: one supplier slipping hits availability across many SKUs. | `spend-pareto.json -> summary.js supplierConcentration` |

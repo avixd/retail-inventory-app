@@ -73,6 +73,30 @@ export default function DemandForecast({ viewLabel }) {
         ))}
       </div>
 
+      {acc.promotions?.weeksWape != null && (() => {
+        const p = acc.promotions;
+        const gainPts = (p.weeksWapeNoLift - p.weeksWape) * 100;
+        // Say only what the back-test supports: a material gain, a small one, or none.
+        const headline = gainPts >= 2 ? "Modelling promotions cuts promotion-week error"
+          : gainPts > 0 ? "Promotions are modelled; the gain is small this month" : "Promotions are modelled; no gain this month";
+        return (
+          <div className="chart-card promo-callout" style={{ marginBottom: 16 }}>
+            <div>
+              <h4 className="chart-card__title">{headline}</h4>
+              <p className="chart-card__sub">
+                In promotion weeks the back-tested error is <b>{pct(p.weeksWape)}</b> with the promotion lift, against{" "}
+                <b>{pct(p.weeksWapeNoLift)}</b> without it.
+                {p.medianLift != null && (
+                  <> The estimated lift is consistent: a typical 20% discount raises demand by about{" "}
+                  <b>{Math.round(p.medianLift * 20)}%</b> ({p.seriesWithLift} of {acc.series} store series show a measurable lift).</>
+                )}
+                {gainPts < 2 && <> Week-to-week demand swings, not promotions, account for most of the remaining error.</>}
+              </p>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="chart-card" style={{ marginBottom: 16 }}>
         <div className="chart-card__head">
           <div>
@@ -136,7 +160,8 @@ export default function DemandForecast({ viewLabel }) {
           <li><b>Error (WAPE):</b> sum of |forecast − actual| ÷ sum of actual, weighted across series by 52-week demand. Lower is better.</li>
           <li><b>Baseline:</b> "same week last year". A forecast that can't beat it isn't adding value; the table shows where that happens.</li>
           <li><b>Network view:</b> store forecasts are summed; the 80% band combines store uncertainty assuming independent errors.</li>
-          <li><b>Not yet modelled:</b> promotions and price changes. Promotion weeks will be under-forecast (see the business review).</li>
+          <li><b>Promotions:</b> demand is modelled as base × (1 + β × weekly average discount). β is estimated per series from past promotions against nearby non-promotion weeks, removed before fitting, and re-applied to planned promotion weeks. In the back-test, β is re-estimated using only data before each cut.</li>
+          <li><b>Not yet modelled:</b> permanent price changes (elasticity) and cannibalisation between products.</li>
         </ul>
       </details>
     </>

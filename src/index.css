@@ -10,7 +10,7 @@
 
   --ink-900: #0f1b22;
   --ink-700: #33454f;
-  --ink-500: #61727c;
+  --ink-500: #52626b;  /* WCAG AA: >= 4.5:1 on white and on the light grey surfaces */
   --ink-300: #9aa8b1;
 
   --bg:        #eef2f5;

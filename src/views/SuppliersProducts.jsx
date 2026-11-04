@@ -119,7 +119,7 @@ function ProductsTab() {
           <h4 className="chart-card__title">Product / SKU catalog</h4>
           <span className="pill">{PRODUCTS.length} SKUs</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>

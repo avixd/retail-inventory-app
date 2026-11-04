@@ -67,7 +67,7 @@ export default function GoodsReceipt({ viewLabel }) {
           <div className="grid-2">
             <div className="field">
               <label>Open purchase order</label>
-              <select value={poId} onChange={(e) => onPoChange(e.target.value)}>
+              <select aria-label="Open purchase order" value={poId} onChange={(e) => onPoChange(e.target.value)}>
                 {OPEN_POS.map((p) => (
                   <option key={p.po} value={p.po}>{p.po} — {supplierName(p.supplierId)} ({p.status})</option>
                 ))}
@@ -75,7 +75,7 @@ export default function GoodsReceipt({ viewLabel }) {
             </div>
             <div className="field">
               <label>Receive into warehouse</label>
-              <select value={warehouse} onChange={(e) => setWarehouse(e.target.value)} disabled={READ_ONLY}>
+              <select aria-label="Receive into warehouse" value={warehouse} onChange={(e) => setWarehouse(e.target.value)} disabled={READ_ONLY}>
                 {WAREHOUSES.filter((w) => w.type === "Distribution Center").map((w) => (
                   <option key={w.id} value={w.id}>{w.name}</option>
                 ))}
@@ -106,6 +106,7 @@ export default function GoodsReceipt({ viewLabel }) {
                           type="number"
                           min="0"
                           max={l.qty}
+                          aria-label={`Quantity received for ${l.sku}`}
                           disabled={READ_ONLY}
                           value={received[i] ?? 0}
                           onChange={(e) => setReceived((prev) => ({ ...prev, [i]: e.target.value }))}

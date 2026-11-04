@@ -115,7 +115,7 @@ export default function InventoryOverview({ viewLabel }) {
   const hierField = (label, value, onChange, options) => (
     <div className="filter-bar__field">
       <label>{label}</label>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
         <option>All</option>
         {options.map((o) => <option key={o}>{o}</option>)}
       </select>
@@ -144,7 +144,7 @@ export default function InventoryOverview({ viewLabel }) {
         {hierField("Style", style, setStyle, styles)}
         <div className="filter-bar__field">
           <label>Location</label>
-          <select value={locSel} onChange={(e) => setLocSel(e.target.value)}>
+          <select value={locSel} onChange={(e) => setLocSel(e.target.value)} aria-label="Location">
             <option value="all">All locations</option>
             <option value="type:store">All storefronts</option>
             <option value="type:dc">All distribution warehouses</option>
@@ -196,7 +196,7 @@ export default function InventoryOverview({ viewLabel }) {
                 <td className="num-cell">{CAD(val.onRetail)}</td>
               </tr>
               <tr>
-                <td><span className="pill" style={{ background: "color-mix(in srgb, #57b0d6 20%, #fff)", color: "#2b7ba0" }}>Off shelf</span></td>
+                <td><span className="pill" style={{ background: "color-mix(in srgb, #57b0d6 20%, #fff)", color: "#1b5574" }}>Off shelf</span></td>
                 <td className="num-cell" style={{ fontWeight: 700 }}>{offShelfUnits.toLocaleString()}</td>
                 <td className="num-cell">{offShelfPct}%</td>
                 <td className="num-cell">{CAD(val.offCost)}</td>
@@ -280,7 +280,7 @@ export default function InventoryOverview({ viewLabel }) {
           </div>
           <span className="pill">{rows.length} SKUs</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>

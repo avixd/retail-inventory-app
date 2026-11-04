@@ -42,13 +42,13 @@ function NewTransferForm({ onSubmit }) {
           <div className="grid-2">
             <div className="field">
               <label>From warehouse</label>
-              <select value={fromWh} onChange={(e) => setFromWh(e.target.value)}>
+              <select aria-label="From warehouse" value={fromWh} onChange={(e) => setFromWh(e.target.value)}>
                 {WAREHOUSES.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
               </select>
             </div>
             <div className="field">
               <label>To warehouse / store</label>
-              <select value={toWh} onChange={(e) => setToWh(e.target.value)}>
+              <select aria-label="To warehouse / store" value={toWh} onChange={(e) => setToWh(e.target.value)}>
                 {WAREHOUSES.filter((w) => w.id !== fromWh).map((w) => (
                   <option key={w.id} value={w.id}>{w.name}</option>
                 ))}
@@ -68,13 +68,14 @@ function NewTransferForm({ onSubmit }) {
                     <select
                       value={l.sku}
                       onChange={(e) => setLine(i, { sku: e.target.value })}
+                      aria-label={`Product for line ${i + 1}`}
                       style={{ padding: "7px 10px", borderRadius: 8, border: "1px solid var(--border-strong)", fontSize: 13, fontFamily: "inherit" }}
                     >
                       {PRODUCTS.map((p) => <option key={p.sku} value={p.sku}>{p.sku} — {p.name}</option>)}
                     </select>
                   </td>
                   <td className="num-cell">
-                    <input className="cell-input" type="number" min="1" value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })} />
+                    <input className="cell-input" type="number" min="1" aria-label={`Quantity for line ${i + 1}`} value={l.qty} onChange={(e) => setLine(i, { qty: e.target.value })} />
                   </td>
                   <td>
                     <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeLine(i)} aria-label="Remove line">
@@ -170,7 +171,7 @@ export default function TransferOrders({ viewLabel }) {
           <h4 className="chart-card__title">Transfer orders</h4>
           <span className="pill">{TRANSFER_ORDERS.length} transfers</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>

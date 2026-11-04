@@ -151,7 +151,7 @@ export default function OffShelf({ viewLabel }) {
           </div>
           <span className="pill">{rows.length} placements</span>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table">
             <thead>
               <tr>

@@ -86,7 +86,7 @@ export default function SitePerformance({ viewLabel }) {
             <p className="chart-card__sub">Share of SKU-days ending with an empty shelf. Darker = more lost sales.</p>
           </div>
         </div>
-        <div className="scroll-tile">
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table">
           <table className="table heat-table">
             <thead><tr><th>Store</th>{months.map((m) => <th key={m} className="num-cell">{mon(m)}</th>)}</tr></thead>
             <tbody>

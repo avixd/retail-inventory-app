@@ -1,0 +1,70 @@
+name: Production monitor
+
+# Read-only health check of the live site, its published data and the portfolio
+# links (scripts/monitor.mjs). Every 6 hours and on demand. Free: this is a public
+# repository, so Actions minutes are unlimited, and nothing here writes data.
+#
+# Alerting: on failure it opens (or comments on) one "Production monitor" issue,
+# which GitHub emails to the repository owner; on the next healthy run it closes
+# that issue. The run summary shows every check.
+#
+# Note: GitHub pauses scheduled workflows in public repositories after 60 days
+# without repository activity, and emails a warning first. Re-enable it under
+# Actions -> Production monitor (runbook).
+on:
+  schedule:
+    - cron: "23 */6 * * *"  # off the hour to avoid queue peaks
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Health checks
+        id: health
+        shell: bash  # explicit bash = -eo pipefail, so a failing check isn't masked by tee
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: node scripts/monitor.mjs | tee report.md
+
+      - name: Open or update the alert issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body="$(cat report.md 2>/dev/null || echo 'Monitor failed before producing a report.')
+
+          Run: $RUN_URL"
+          open=$(gh issue list --state open --search "Production monitor in:title" --json number --jq '.[0].number')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body "$body"
+          else
+            gh issue create --title "Production monitor: checks failing" --body "$body"
+          fi
+
+      - name: Close the alert issue when healthy again
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          open=$(gh issue list --state open --search "Production monitor in:title" --json number --jq '.[0].number')
+          if [ -n "$open" ]; then
+            gh issue close "$open" --comment "All checks passing again: $RUN_URL"
+          fi

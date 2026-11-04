@@ -206,6 +206,14 @@ Weekly series per product × store (about 300 series), 8-week horizon.
 
 Selection uses a rolling-origin backtest: 4 folds, each forecasting 8 weeks ahead, scored by **WAPE** (Σ|actual − forecast| / Σ actual). The lowest-WAPE model is chosen per series and the improvement over seasonal naive (forecast value added) is stored. The 80% interval comes from empirical quantiles of backtest errors, which avoids distribution assumptions that intermittent series break. Promotions are not used as a model input in Phase 2; that's a documented limitation and a natural Phase 3 item.
 
+### 4.5a Promotion-aware forecasting (as built, ADR 0010)
+
+- **Intensity** *z*<sub>w</sub>: average daily promotional discount in week *w* for the product (chain-wide promotions; overlapping promotions count once at the deeper discount). Known for history and for the 8 forecast weeks. `runner.promotion_intensity()`.
+- **Lift** β: for each promotion week with at least two non-promotion weeks within ±4 weeks, (*y*<sub>w</sub> ÷ median(neighbours) − 1) ÷ *z*<sub>w</sub>; β = median, clipped to [0, 8]; < 2 usable weeks → 0. `forecasting.estimate_lift()`.
+- **Fit and forecast:** every candidate model fits *y* ÷ (1 + β*z*); the forecast is multiplied by (1 + β*z*<sub>future</sub>). `forecasting.with_promotions()`.
+- **Back-test:** β re-estimated from each fold's training window only; promotion weeks scored with and without the lift (`forecast_accuracy.promo_actual`, `promo_abs_err`, `promo_abs_err_no_lift`, `promo_lift`).
+- **Tests:** known-answer recovery of β = 3; identical output when there are no promotions.
+
 ### 4.6 Supplier scorecard from transactions
 
 Same six criteria and weights as the current UI (they sum to 1.0), now measured from trailing 12-month history:
@@ -230,6 +238,18 @@ Each sub-score is clamped to 0–100. Cohorts keep the existing thresholds: ≥ 
 | GMROI | trailing 12-month gross margin ÷ average inventory at cost |
 | Stockout rate | store-product-days with zero on hand ÷ active store-product-days |
 | Aged stock | units at locations with no sale of that product in 90 days |
+
+### 4.8 Cost/price history and demand realism (as built, ADRs 0009, 0011)
+
+| Component | Implementation |
+|---|---|
+| Schedule | `generate/realism.build_price_schedule()`: initial version at history start; each supplier's renewal month: cost × (1 + U(1.5%, 6%)); +28 days: price × (1 + increase × U(50%, 100%)), price points .99 above $10, never below cost × 1.05 |
+| Lookup | `PriceBook.at(product, date)`: bisect over each product's sorted versions |
+| Storage | `core.product_price_history` (PK product, valid_from; append-only for the loader); seed loads versions ≤ end date, the advance job appends new ones and updates `core.product` |
+| Dimension | `analytics.dim_product_scd2`: `valid_to = lead(valid_from) − 1`, `is_current`, `markup_on_cost` |
+| Facts | `fact_sales_daily` and both KPI calculations range-join the version in force on the row's date |
+| Demand shocks | `weekly_shock(seed, product, date)`: log-normal, mean 1, σ by profile (0.10 / 0.45 / 0.80), erratic 20% lumpy weeks at 10%; RNG keyed on (seed, product, week) |
+| Integrity | DQ `price_history_current`, `price_history_coverage`; table checks: cost > 0, price > cost |
 
 ## 5. API
 

@@ -72,7 +72,7 @@ export default function StockMovements({ viewLabel }) {
           <h4 className="chart-card__title">Movement ledger</h4>
           <span className="pill">{rows.length} entries</span>
         </div>
-        <div className="scroll-tile" style={{ maxHeight: 460 }}>
+        <div className="scroll-tile" tabIndex={0} role="region" aria-label="Scrollable table" style={{ maxHeight: 460 }}>
           <table className="table">
             <thead>
               <tr>
@@ -85,7 +85,7 @@ export default function StockMovements({ viewLabel }) {
                 <tr key={m.id}>
                   <td className="ts">{m.ts}</td>
                   <td>
-                    <span className="pill" style={{ background: `color-mix(in srgb, ${TYPE_TONE[m.type]} 16%, #fff)`, color: TYPE_TONE[m.type] }}>
+                    <span className="pill" style={{ background: `color-mix(in srgb, ${TYPE_TONE[m.type]} 16%, #fff)`, color: `color-mix(in srgb, ${TYPE_TONE[m.type]} 55%, #000)` }}>
                       {m.type}
                     </span>
                   </td>

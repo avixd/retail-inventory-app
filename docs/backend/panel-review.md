@@ -8,21 +8,21 @@ Throughout, **built** means implemented and tested in this repository today; **p
 
 | | Rating | One line |
 |---|---|---|
-| **As a portfolio MVP** | **8 / 10** (7.5 before this review) | Decision-led, rigorous and unusually well governed for its size: a GMROI-anchored KPI tree with data-derived targets, published data quality and verifiable provenance. The data is synthetic and the live backend isn't deployed |
-| **As a production system for a real retailer** | **4 / 10** | The architecture and method transfer; the scale, availability, integration, identity and compliance work has not been done |
+| **As a portfolio MVP** | **8.5 / 10** (7.5 at first review, 8 after round 1) | Decision-led, rigorous and well governed: GMROI-anchored KPI tree, realistic data with cost/price history, promotion-aware forecasts measured honestly, monitored and accessible. The data is synthetic and the live backend isn't deployed |
+| **As a production system for a real retailer** | **5 / 10** (4 before) | Monitoring, SCD Type 2 history and WCAG compliance are in place; live deployment, Canadian residency, identity and real integrations are not |
 
 ### Scorecard
 
 | Dimension | Score | Rationale |
 |---|---|---|
 | Business value and clarity | 8 | Opens on a GMROI scorecard (markup × turns, guardrail, data-derived targets) and six money-framed findings; planning views explain *what to do*. No workflow to act on a decision yet |
-| Analytics rigour | 8 | Forecasts chosen by back-test; accuracy **and bias** pooled exactly against a naive baseline (≈31% vs 38% WAPE); statistical safety stock with lead-time variability, recomputed in the browser; network GMROI. Promotions not modelled |
-| Data model | 7 | Normalised system of record with an append-only, sign-checked stock ledger; Kimball star with conformed dimensions and periodic-snapshot facts. Dimensions are Type 1 only; no cost layers, returns or item-location attributes |
+| Analytics rigour | 8 | On realistic demand: chosen models 41.4% vs 52.7% WAPE for the baseline, bias −2.9%, pooled exactly. Promotion lift recovered accurately (median β 2.7 vs 2.5 simulated) but only ~1 point better in promotion weeks, because week-to-week swings dominate; reported as such. No elasticity yet |
+| Data model | 8 | Normalised system of record with an append-only, sign-checked ledger; Kimball star; **SCD Type 2 cost/price history** with facts at the cost in force on each date. No cost layers, returns or item-location attributes |
 | Architecture and scalability | 6 | Stateless read API, response cache, ETags, static-first front end. Never load-tested beyond 60 SKUs × 8 sites |
 | Availability and resilience | 6 | The public site depends on nothing but GitHub Pages; the live API is a single free instance with no SLA |
 | Security | 8 | Least-privilege roles enforced in the database, read-only by construction, CSP, secret scanning, breach playbook. No identity layer (not needed for public synthetic data; mandatory for real data) |
-| Compliance and governance | 6 | No personal or payment data by design; audit trail, immutable month-end snapshots, generated data dictionary. Gaps: data residency, retention policy, accessibility audit, statutory valuation |
-| Operability | 7 | 9 data-quality gates published per month, structured logs, runbook, data release runnable in CI, checksummed snapshots. No monitoring or alerting |
+| Compliance and governance | 7 | No personal or payment data by design; audit trail, immutable snapshots, generated dictionary; **WCAG 2.0/2.1 A+AA: 0 violations, enforced in CI**. Gaps: data residency (deferred), retention policy, statutory valuation |
+| Operability | 8 | 11 data-quality gates published per month, checksummed snapshots, CI data release, **production monitor every 6 hours with issue alerts**. No alerting on the live API (not deployed) |
 | Delivery and documentation | 9 | ADRs, as-built HLD/LLD, pipeline lineage, data dictionary, cost and security analysis, business review |
 | Cost | 10 | $0 by construction; no payment method anywhere, so no bill is possible |
 
@@ -41,7 +41,7 @@ Throughout, **built** means implemented and tested in this repository today; **p
 - **Read-only.** It recommends orders but can't place, approve or track them.
 
 **The ugly**
-- **Synthetic data hid real problems until late.** Bins were overfilled for the project's whole life until a screenshot exposed it; demand is too smooth (59 of 60 SKUs classify as "predictable"); 88% of value sits in DCs.
+- **Synthetic data hid real problems until late.** Bins were overfilled for most of the project's life until a screenshot exposed it, and demand was too smooth (59 of 60 SKUs "predictable") until the simulator was calibrated. Both are fixed, but the lesson stands: synthetic data needs explicit realism checks, now built into the data-quality gates and tests. 88% of inventory value still sits in DCs.
 - **Bus factor of one.** One person knows how to operate it, and until today the data release only ran on their laptop.
 - **Two repositories, one set of docs, copied by hand.** The public copy can drift from the private source.
 - **Hosting region.** The planned database region is US (Ohio); a Canadian retailer would likely require Canadian residency.
@@ -111,14 +111,14 @@ The code's main choices (set-based SQL, independent per-series models, a statele
 | 1 | Live backend not deployed | "Backend" is only demonstrable via snapshots | Provision Neon and Render per the setup guide; smoke test; keep snapshot fallback | Platform & SRE | S | High |
 | 2 | Single-instance API and database | Downtime of live data | Production topology in §3; until then, the snapshot fallback | Platform & SRE | M | Medium (production only) |
 | 3 | US hosting region | Residency non-compliance | Canadian regions; transfer impact assessment | Security & compliance | S | High before real data |
-| 4 | Type 1 dimensions | Restated history; audit questions | SCD Type 2 on product cost/price, supplier terms, store attributes | Data engineering | M | Medium |
-| 5 | Forecasts ignore promotions | Promo weeks under-forecast | Promotion uplift regressor; report promo-week accuracy separately | Data science | M | High |
-| 6 | Synthetic demand too smooth | Segmentation and safety stock look easier than reality | Calibrate the simulator to public retail benchmarks (CV distribution, DC share) | Data science | S | Medium |
-| 7 | No monitoring or alerting | Silent failures | Uptime checks, error-rate and latency alerts, data-freshness alerts | Platform & SRE | S | Medium |
+| 4 | Type 1 dimensions | Restated history; audit questions | SCD Type 2 on product cost/price, supplier terms, store attributes | Data engineering | M | **Resolved 04/11** (ADR 0009) |
+| 5 | Forecasts ignore promotions | Promo weeks under-forecast | Promotion uplift regressor; report promo-week accuracy separately | Data science | M | **Resolved 04/11** (ADR 0010; gain measured) |
+| 6 | Synthetic demand too smooth | Segmentation and safety stock look easier than reality | Calibrate the simulator to public retail benchmarks (CV distribution, DC share) | Data science | S | **Resolved 04/11** (ADR 0011; XYZ 35/15/10) |
+| 7 | No monitoring or alerting | Silent failures | Uptime checks, error-rate and latency alerts, data-freshness alerts | Platform & SRE | S | **Resolved 04/11** (ADR 0012) |
 | 8 | Docs copied between repos by hand | Public docs drift | CI job syncs `docs/` to the public repo on release (excluding internal plans) | Platform & SRE | S | Low |
 | 9 | Read-only: no decision workflow | Recommendations not actioned | Accept/override with reason codes, approval limits, audit trail; SSO and RLS first | Product & UX + Security | L | Next phase |
 | 10 | Valuation not statutory-grade | Misuse for financial reporting | Cost layers, NRV write-downs; label as management information until then | Data engineering + Finance | M | Low (until finance use) |
-| 11 | Accessibility not audited | AODA exposure | WCAG 2.0 AA audit and fixes | Product & UX | S | Medium |
+| 11 | Accessibility not audited | AODA exposure | WCAG 2.0 AA audit and fixes | Product & UX | S | **Resolved 04/11** (ADR 0012; 0 violations) |
 | 12 | Bus factor of one | Operational fragility | Second maintainer, recorded walkthrough, on-call rota | Leadership | S | High for production |
 
 **Resolved during this review** (built and tested):
@@ -133,6 +133,11 @@ The code's main choices (set-based SQL, independent per-series models, a statele
 | KPI definitions scattered | `metrics/metrics.toml` → generated KPI tree; CI-validated |
 | No check on product economics | `price_above_cost` blocks a load with a SKU priced at or below cost |
 | Freshness check would warn forever on frozen data | Replaced by "sales loaded through the as-of date" |
+| Cost and price overwritten (Type 1) | SCD Type 2 history; COGS, margin and KPI inventory valued at the cost in force on each date |
+| Promotions ignored by forecasts | Lift modelled and measured without look-ahead; promotion-week gain reported honestly (~1 point) |
+| 59 of 60 SKUs "steady" | Product-level demand shocks; XYZ 35 / 15 / 10, lost sales ~6% of demand |
+| No monitoring | 6-hourly production monitor with checksum verification and issue alerts |
+| Accessibility never audited | axe-core WCAG A+AA: 889 failing elements → 0, enforced in CI |
 
 ## 5. Next steps (90 days)
 

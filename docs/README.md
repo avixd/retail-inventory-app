@@ -2,7 +2,7 @@
 
 A full-stack retail inventory platform: a React dashboard on GitHub Pages, a read-only API, a Postgres system of record with an analytics layer, and a pipeline that simulated 24 months of multi-site retail (to a fixed cut-off of 31 Oct 2026) and runs demand forecasting and statistical replenishment. It opens on an Executive Summary, and an As-of selector replays the whole dashboard at any of the last twelve month-ends. All data is synthetic. Running cost: $0.
 
-**[Open the live app](https://avixd.github.io/retail-inventory-app/)** · **[Watch the demo (1:24)](https://avixd.github.io/assets/video/retail-inventory-demo.mp4)**
+**[Open the live app](https://avixd.github.io/retail-inventory-app/)** · **[Watch the demo (1:32)](https://avixd.github.io/assets/video/retail-inventory-demo.mp4)**
 
 ## Read in this order
 

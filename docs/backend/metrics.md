@@ -22,6 +22,10 @@ flowchart TD
     supplier_concentration("Top-3 supplier share of spend<br/><small>Operational</small>")
     supplier_on_time("Supplier on-time delivery<br/><small>Operational</small>")
     overdue_payables("Overdue supplier payables<br/><small>Operational</small>")
+    safety_stock_value("Safety-stock investment<br/><small>Operational</small>")
+    dio["Days inventory outstanding (DIO)<br/><small>Driver</small>"]
+    dpo_terms("Days payable outstanding (terms-weighted)<br/><small>Operational</small>")
+    excess_stock_value("Excess stock<br/><small>Operational</small>")
     turns --> gmroi
     markup --> gmroi
     days_of_supply --> turns
@@ -34,6 +38,10 @@ flowchart TD
     supplier_concentration --> stockout_rate
     supplier_on_time --> stockout_rate
     overdue_payables --> markup
+    safety_stock_value --> turns
+    dio --> turns
+    dpo_terms --> dio
+    excess_stock_value --> dio
 ```
 
 ## Targets
@@ -57,6 +65,10 @@ Best rolling 3-month average of the metric over the trailing 12 month-ends: perf
 | **Top-3 supplier share of spend** | Operational | lower | year-to-date ordered spend with the three largest suppliers / all YTD ordered spend | % | month-end x network | none (risk context) | Procurement |
 | **Supplier on-time delivery** | Operational | higher | received PO lines whose first receipt arrived on or before the expected date / all received PO lines, per supplier | % | supplier | none (scorecard cohorts) | Procurement |
 | **Overdue supplier payables** | Operational | lower | sum of open supplier invoices past their due date | CAD | month-end x network | none (trend vs prior month) | Finance (AP) |
+| **Safety-stock investment** | Operational | lowest that achieves the target service level | sum over positions of z(service level of its ABC class) x sigma_LT x unit cost, sigma_LT = sqrt(L x sd_d^2 + d^2 x sd_L^2) | CAD | month-end x ABC class | cost-minimising service level per class (holding cost = margin protected at the margin) | Inventory planning / Finance |
+| **Days inventory outstanding (DIO)** | Driver | lower | average inventory at cost / average daily cost of goods sold (= network days of supply) | days | month x network | data-derived (see above) | Finance / Inventory planning |
+| **Days payable outstanding (terms-weighted)** | Operational | higher (within agreed terms) | supplier payment terms in days weighted by year-to-date spend | days | month-end x network | none (negotiated) | Procurement / Finance (AP) |
+| **Excess stock** | Operational | lower | sum over positions of max(0, on hand - (reorder point + EOQ)) x unit cost | CAD | month-end x position | zero | Inventory planning |
 
 ## Why each one matters, and where it's computed
 
@@ -75,3 +87,7 @@ Best rolling 3-month average of the metric over the trailing 12 month-ends: perf
 | Top-3 supplier share of spend | Supply risk: one supplier slipping hits availability across many SKUs. | `spend-pareto.json -> summary.js supplierConcentration` |
 | Supplier on-time delivery | Late suppliers inflate lead-time variability, which inflates safety stock. | `analytics.v_supplier_scorecard` |
 | Overdue supplier payables | Late payment forfeits early-payment discounts and supplier goodwill, which erode margin and terms. | `procurement-summary.json -> summary.js payables` |
+| Safety-stock investment | The buffer is the controllable part of inventory: it buys availability with cash. | `replenishment.json + dataset.json -> src/data/planning.js serviceLevelAnalysis` |
+| Days inventory outstanding (DIO) | Inventory expressed as cash days; with DPO it gives the days of stock the business finances itself. | `kpis-network.json -> src/data/planning.js workingCapital` |
+| Days payable outstanding (terms-weighted) | Supplier terms finance inventory; longer terms reduce the cash the business ties up. | `dataset.json suppliers -> src/data/planning.js workingCapital` |
+| Excess stock | Stock beyond what the policy can ever need: cash that can be released without hurting service. | `replenishment.json -> src/data/planning.js workingCapital` |

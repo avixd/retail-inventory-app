@@ -368,6 +368,13 @@ Data-quality checks: no negative end-of-day on hand; every active store has sale
 
 **Data trust panel**: `data-quality.json` (latest successful load's checks) rendered on the Executive Summary.
 
+**Decision tools** (`src/data/planning.js`, [ADR 0013](adr/0013-decision-tools.md)):
+
+| View | Computation |
+|---|---|
+| Service Levels | `serviceLevelAnalysis(replenishment, dataset, levels)`: per position σ<sub>LT</sub>, cycles a year (365·d̄ ÷ EOQ), cost and margin; per class the cost curve over 80-99.5%, the minimum, the chosen and current points. Standard normal Φ (A&S 7.1.26), inverse (A&S 26.2.23), loss function G(z) = φ(z) − z(1 − Φ(z)) |
+| Working Capital | `workingCapital(files, asOf)`: inventory at cost, open payables, DIO from the network KPI row, DPO weighted by YTD spend, excess above ROP + EOQ, DC bin ageing buckets, 12-month DIO trend |
+
 **Read-only build** (`VITE_READ_ONLY=true`, set by the Pages deploy): every form is wrapped in a disabled `<fieldset>`, action buttons are disabled with a "View only" label, and handlers return early as a second guard.
 
 **Tests:** `npm run test:unit` (summary maths with hand-worked fixtures; every published month hydrates, every selector and summary metric is finite, dates match folders) and `npm run test:api` (contract against a running API).

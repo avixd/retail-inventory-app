@@ -92,6 +92,8 @@ Every figure on screen comes from one function over one file, which comes from o
 | Replenishment plan | Replenishment Plan view | `replenishment.json` (all pages) | `v_replenishment` |
 | ABC-XYZ matrix | Inventory Health view | `abc-xyz.json` | `v_abc_xyz` |
 | Site KPIs | Site Performance view | `kpis.json` | `v_inventory_kpis` |
+| Service-level simulator | `serviceLevelAnalysis` | `replenishment.json`, `dataset.json` | `v_replenishment`, `v_ds_products` |
+| Working capital | `workingCapital` | `dataset.json`, `replenishment.json`, `procurement-summary.json`, `kpis-network.json` | `v_ds_*`, `v_replenishment`, `v_payables_by_terms`, `v_kpi_network_monthly` |
 | Data trust panel | Executive Summary | `data-quality.json` → `/api/v1/data-quality` | `v_data_quality` (latest **successful** load) |
 | Reorder queue, overview, P2P, suppliers | `inventory.js` selectors | `dataset.json` | `v_ds_*` |
 

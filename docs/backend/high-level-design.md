@@ -66,6 +66,8 @@ The system exists to answer the questions a retail inventory and procurement tea
 | FR-28 | Forecasts model planned promotions as a lift on base demand; promotion-week accuracy reported with and without it | BR-06 |
 | FR-29 | Simulated demand has realistic product-level variability (steady, variable, erratic profiles) | BR-02, BR-06 |
 | FR-30 | Production monitor every 6 hours with alerting by GitHub issue; WCAG 2.0/2.1 A+AA audit enforced in CI | NFR-06, accessibility |
+| FR-31 | Service-level simulator: per ABC class, safety-stock investment vs expected lost margin, cost-minimising level, what-if sliders | BR-02, BR-07 |
+| FR-32 | Working-capital view: DIO, terms-weighted DPO, the self-financed gap, supplier-funded share, excess and aged stock | BR-03, BR-07 |
 
 ## 4. Non-functional requirements
 

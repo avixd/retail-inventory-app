@@ -16,3 +16,4 @@ Short records of decisions made during the build that changed or sharpened the o
 | [0010](0010-promotion-aware-forecasting.md) | Model promotions as a lift on base demand, measured in the back-test | Accepted |
 | [0011](0011-demand-realism.md) | Product-level weekly demand shocks for realistic variability | Accepted |
 | [0012](0012-monitoring-and-accessibility.md) | Free production monitoring; WCAG A/AA enforced in CI | Accepted |
+| [0013](0013-decision-tools.md) | Service-level and working-capital decision tools computed in the browser | Accepted |

@@ -21,6 +21,7 @@ A multi-site retailer's inventory decisions (what to reorder, where capital is t
 |---|---|
 | **Executive Summary** (landing view) | Inventory investment, sales at risk, stock-out rate, network GMROI, supplier concentration, overdue payables: each with its change since last month-end, a takeaway, and a link to the detail |
 | **Strategic KPI scorecard** | Is the return on inventory improving, and why? GMROI (north star) = markup on cost × turns, plus days of supply and the stock-out guardrail, each against the business's own best sustained performance |
+| **Service levels and working capital** | How much availability is worth paying for, by product class (and the cost-minimising level)? How many days of stock does the business finance itself, and where can cash be released? |
 | **Planning views** | How good are the forecasts (accuracy and bias vs a naive baseline)? What should be reordered and why (worked safety-stock maths)? Is capital held where the revenue is (ABC-XYZ)? Which sites under-perform? |
 | **Look back in time** | How did we stand at any of the last twelve month-ends? What moved? |
 | Reorder / low-stock | Which SKUs are below their statistical reorder point, and what to buy |

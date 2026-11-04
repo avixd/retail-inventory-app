@@ -103,6 +103,8 @@ const CHECK_LABEL = {
   price_above_cost: "Every product sells above cost",
   open_po_without_plan: "Every open PO is progressing",
   bin_over_capacity: "No DC bin over capacity",
+  price_history_current: "Price history matches the current price list",
+  price_history_coverage: "Every product has a dated cost and price from day one",
 };
 
 /** Results of the data-quality gates for the load behind this month's numbers. */

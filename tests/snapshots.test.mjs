@@ -14,6 +14,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import * as inv from "../src/data/inventory.js";
 import { summarise, kpiTrend, kpiScorecard } from "../src/data/summary.js";
+import { serviceLevelAnalysis, workingCapital } from "../src/data/planning.js";
 
 const DIR = new URL("../public/snapshot/", import.meta.url);
 const read = (path) => JSON.parse(readFileSync(new URL(path, DIR), "utf8"));
@@ -78,6 +79,15 @@ for (const month of index.months) {
     const sc = kpiScorecard(files.networkKpis, month);
     assert.ok(sc && sc.identityGap < 0.05, `GMROI = markup x turns within rounding (gap ${sc?.identityGap})`);
     assert.ok(sc.metrics.every((m) => m.value != null && m.status != null), "every scorecard KPI has a value and status");
+    // Decision maths runs cleanly on every month: cost-minimising levels exist and
+    // can't cost more than the current policy (the current level is on the grid).
+    const sl = serviceLevelAnalysis(files.replenishment, files.dataset);
+    assert.deepEqual(nonFinite({ c: sl.current, o: sl.optimal }).slice(0, 5), []);
+    assert.ok(sl.optimal.totalCost <= sl.current.totalCost + 1e-6, "optimum never costs more than current policy");
+    const wc = workingCapital({ dataset: files.dataset, replenishment: files.replenishment,
+      procurement: files.procurement, networkKpis: files.networkKpis }, month);
+    assert.ok(wc.dio > 0 && wc.dpo > 0 && Number.isFinite(wc.gapDays), "DIO, DPO and the gap are defined");
+    assert.ok(Math.abs(wc.aging.reduce((s, b) => s + b.value, 0) - wc.inventory) < wc.inventory, "aged DC stock is part of inventory");
     const quality = read(`${month}/data-quality.json`);
     assert.ok(quality.length >= 9 && quality.filter((c) => c.severity === "error").every((c) => c.passed),
       "data-quality published and every blocking check passed");

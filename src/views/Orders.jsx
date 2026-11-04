@@ -130,7 +130,7 @@ function PlacePO() {
             </div>
             <div className="field">
               <label>Expected delivery</label>
-              <input aria-label="Expected delivery" type="date" value={expected} onChange={(e) => setExpected(e.target.value)} aria-label="Expected delivery date" />
+              <input aria-label="Expected delivery" type="date" value={expected} onChange={(e) => setExpected(e.target.value)} />
             </div>
           </div>
 

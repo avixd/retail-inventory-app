@@ -1,6 +1,6 @@
 # Executive panel review: CTO · CIO · COO
 
-**Date:** 03/11/2026 · **Subject:** Retail Inventory Control Tower, end to end (MVP with Phase 2 planning views) · **Format:** strategy at panel level; low-level implementation delegated to specialist teams (§6)
+**Date:** 03/11/2026, updated 04/11/2026 · **Subject:** Retail Inventory Control Tower, end to end (MVP with Phase 2 planning views) · **Format:** strategy at panel level; low-level implementation delegated to specialist teams (§6)
 
 Throughout, **built** means implemented and tested in this repository today; **proposed** means a design for a production deployment, not yet built.
 
@@ -15,7 +15,7 @@ Throughout, **built** means implemented and tested in this repository today; **p
 
 | Dimension | Score | Rationale |
 |---|---|---|
-| Business value and clarity | 8 | Opens on a GMROI scorecard (markup × turns, guardrail, data-derived targets) and six money-framed findings; planning views explain *what to do*. No workflow to act on a decision yet |
+| Business value and clarity | 9 | Opens on a GMROI scorecard (markup × turns, guardrail, data-derived targets) and six money-framed findings; planning views explain *what to do*; **decision tools price the trade-offs**: cost-minimising service levels (−$16.6K a year) and the cash cycle (suppliers fund 92%, 8.5 days self-funded). No workflow to act on a decision yet |
 | Analytics rigour | 8 | On realistic demand: chosen models 41.4% vs 52.7% WAPE for the baseline, bias −2.9%, pooled exactly. Promotion lift recovered accurately (median β 2.7 vs 2.5 simulated) but only ~1 point better in promotion weeks, because week-to-week swings dominate; reported as such. No elasticity yet |
 | Data model | 8 | Normalised system of record with an append-only, sign-checked ledger; Kimball star; **SCD Type 2 cost/price history** with facts at the cost in force on each date. No cost layers, returns or item-location attributes |
 | Architecture and scalability | 6 | Stateless read API, response cache, ETags, static-first front end. Never load-tested beyond 60 SKUs × 8 sites |
@@ -138,13 +138,16 @@ The code's main choices (set-based SQL, independent per-series models, a statele
 | 59 of 60 SKUs "steady" | Product-level demand shocks; XYZ 35 / 15 / 10, lost sales ~6% of demand |
 | No monitoring | 6-hourly production monitor with checksum verification and issue alerts |
 | Accessibility never audited | axe-core WCAG A+AA: 889 failing elements → 0, enforced in CI |
+| Service levels set by rule of thumb (98 / 95 / 90%) | Service Levels view prices each point of service; cost-minimising 99 / 98.5 / 97% shown with its assumptions ([ADR 0013](adr/0013-decision-tools.md)) |
+| Inventory reported as units and value only | Working Capital view: DIO vs DPO, supplier-funded share, excess above policy, stock age |
+| Demo video predated the scorecard and planning views | Re-recorded from the production build; regenerated from `scripts/demo-video/` at each release |
 
 ## 5. Next steps (90 days)
 
 | Window | Outcome | Teams |
 |---|---|---|
 | Days 0-30 | Live API deployed with monitoring; promotion-aware forecasting prototype; simulator calibration; docs sync automated | Platform & SRE, Data science |
-| Days 31-60 | SCD Type 2 dimensions; decision-tools phase (service-level trade-off simulator, working-capital lens, supplier risk); WCAG audit | Data engineering, Product & UX |
+| Days 31-60 | Supplier risk (the remaining decision tool); exception list that drives policy compliance (modelled ~99.8% fill vs ~5% observed stock-outs); price elasticity. *Done early:* SCD Type 2, service-level simulator, working-capital lens, WCAG audit | Data engineering, Product & UX |
 | Days 61-90 | Pilot design with a real data extract (Canadian region, privacy assessment); accept/override workflow behind SSO; production topology costed | Security & compliance, Product & UX, Retail operations |
 
 ## 6. Delegation: specialist workstreams

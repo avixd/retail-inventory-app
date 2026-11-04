@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test:unit": "node --test tests/summary.test.mjs tests/snapshots.test.mjs",
+    "test:unit": "node --test tests/summary.test.mjs tests/planning.test.mjs tests/snapshots.test.mjs",
     "test:api": "node --test tests/api-contract.test.mjs",
     "test:a11y": "node scripts/a11y-audit.mjs",
     "preview": "vite preview"
